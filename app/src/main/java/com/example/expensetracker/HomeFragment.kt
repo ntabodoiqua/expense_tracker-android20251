@@ -17,10 +17,8 @@ import com.example.expensetracker.ui.AddTransactionActivity
 import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
 import java.text.DecimalFormat
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
 import com.bumptech.glide.Glide
+import com.example.expensetracker.data.Transaction
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -59,7 +57,7 @@ class HomeFragment : Fragment() {
             list?.let {
                 fullList = it
                 adapter.setData(it)
-                calculateBalance(it)
+                updateDashboard(it)
                 if (it.isEmpty()) {
                     // Nếu list rỗng -> Hiện thông báo, Ẩn RecyclerView
                     binding.layoutEmpty.visibility = android.view.View.VISIBLE
@@ -85,18 +83,32 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun calculateBalance(list: List<com.example.expensetracker.data.Transaction>) {
-        var total = 0.0
-        for (item in list) {
-            if (item.type == 1) { // Thu
-                total += item.amount
-            } else { // Chi
-                total -= item.amount
+    // Hàm tính toán và cập nhật giao diện số dư
+    private fun updateDashboard(list: List<Transaction>) {
+        var totalIncome = 0.0
+        var totalExpense = 0.0
+
+        // 1. Duyệt qua danh sách để cộng dồn
+        for (transaction in list) {
+            if (transaction.type == 1) {
+                // Nếu là Thu nhập (Type = 1)
+                totalIncome += transaction.amount
+            } else {
+                // Nếu là Chi tiêu (Type = 0 hoặc khác 1)
+                totalExpense += transaction.amount
             }
         }
 
-        val formatter = DecimalFormat("#,### đ")
-        binding.currentBalanceValue.text = formatter.format(total)
+        // 2. Tính số dư hiện tại
+        val totalBalance = totalIncome - totalExpense
+
+        // 3. Định dạng số tiền cho đẹp (VD: 5000000 -> 5.000.000 đ)
+        val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("vi", "VN"))
+
+        // 4. Gán vào TextView
+        binding.currentBalanceValue.text = formatter.format(totalBalance)
+        binding.tvIncome.text = formatter.format(totalIncome)   // ID này bạn vừa tạo ở bước trước
+        binding.tvExpense.text = formatter.format(totalExpense) // ID này bạn vừa tạo ở bước trước
     }
 
     private fun setupSwipeToDelete() {
