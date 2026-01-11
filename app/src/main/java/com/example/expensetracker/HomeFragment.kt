@@ -1,7 +1,6 @@
 package com.example.expensetracker
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,12 +12,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.expensetracker.databinding.FragmentHomeBinding
-import com.example.expensetracker.ui.AddTransactionActivity
 import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
-import java.text.DecimalFormat
 import com.bumptech.glide.Glide
 import com.example.expensetracker.data.Transaction
+import com.example.expensetracker.ui.AddTransactionFragment
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -37,49 +35,98 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Setup RecyclerView
+
+        // 1. Setup RecyclerView
         adapter = TransactionAdapter()
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
         setupSwipeToDelete()
-        adapter.onItemClick = { transaction ->
-            val intent = Intent(requireContext(), AddTransactionActivity::class.java)
-            intent.putExtra("transaction_data", transaction)
-            startActivity(intent)
-        }
 
-        // Setup ViewModel
+        // 2. Setup ViewModel
         viewModel = ViewModelProvider(this)[TransactionViewModel::class.java]
 
-        // Quan sát dữ liệu thay đổi
+        // 3. Quan sát dữ liệu
         viewModel.allTransactions.observe(viewLifecycleOwner) { list ->
-            // Cập nhật list vào adapter
             list?.let {
                 fullList = it
                 adapter.setData(it)
                 updateDashboard(it)
                 if (it.isEmpty()) {
-                    // Nếu list rỗng -> Hiện thông báo, Ẩn RecyclerView
-                    binding.layoutEmpty.visibility = android.view.View.VISIBLE
-                    binding.recyclerView.visibility = android.view.View.GONE
+                    binding.layoutEmpty.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
                 } else {
-                    // Nếu có dữ liệu -> Ẩn thông báo, Hiện RecyclerView
-                    binding.layoutEmpty.visibility = android.view.View.GONE
-                    binding.recyclerView.visibility = android.view.View.VISIBLE
+                    binding.layoutEmpty.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
                 }
             }
-
         }
 
-        Glide.with(this) // 'this' nếu ở Activity, 'requireContext()' nếu ở Fragment
-            .load(R.drawable.avatar) // Nguồn ảnh (sau này có thể là URL từ mạng)
-            .circleCrop() // <-- LỆNH QUAN TRỌNG NHẤT: Cắt thành hình tròn
-            .into(binding.imgAvatar) // Nơi hiển thị
+        // 4. Load Avatar tròn
+        Glide.with(this)
+            .load(R.drawable.avatar)
+            .circleCrop()
+            .into(binding.imgAvatar)
 
-        // Sự kiện click nút Thêm
+        // ==============================================================
+        // 5. XỬ LÝ SỰ KIỆN SỬA (BẤM VÀO ITEM) - Đã sửa lỗi Intent
+        // ==============================================================
+        adapter.onItemClick = { transaction ->
+            // Tạo BottomSheet
+            val bottomSheet = AddTransactionFragment()
+
+            // Đóng gói dữ liệu cũ gửi sang
+            val bundle = Bundle()
+            bundle.putSerializable("transaction_data", transaction)
+            bottomSheet.arguments = bundle
+
+            // Xử lý khi bấm nút "Cập nhật" ở bên kia
+            bottomSheet.onSaveClick = { amount, typeStr, category, note ->
+                // Convert chuỗi "Thu nhập" -> số 1, "Chi tiêu" -> số 0
+                val typeInt = if (typeStr == "Thu nhập") 1 else 0
+
+                // Tạo đối tượng mới dựa trên cái cũ (giữ nguyên ID và Ngày tháng)
+                val updatedTransaction = transaction.copy(
+                    amount = amount,
+                    type = typeInt,
+                    category = category,
+                    note = note
+                )
+
+                // Gọi ViewModel Update
+                viewModel.updateTransaction(updatedTransaction)
+                Toast.makeText(context, "Đã cập nhật!", Toast.LENGTH_SHORT).show()
+            }
+
+            bottomSheet.show(parentFragmentManager, "EditTransactionTag")
+        }
+
+        // ==============================================================
+        // 6. XỬ LÝ SỰ KIỆN THÊM MỚI (BẤM NÚT FAB)
+        // ==============================================================
         binding.fabAdd.setOnClickListener {
-            val intent = Intent(requireContext(), AddTransactionActivity::class.java)
-            startActivity(intent)
+            val bottomSheet = AddTransactionFragment()
+
+            // Xử lý khi bấm nút "Lưu" ở bên kia
+            bottomSheet.onSaveClick = { amount, typeStr, category, note ->
+                val typeInt = if (typeStr == "Thu nhập") 1 else 0
+
+                // Tạo giao dịch mới (ID = 0 để Room tự tăng)
+                val newTransaction = Transaction(
+                    id = 0,
+                    title = category,
+                    amount = amount,
+                    type = typeInt,
+                    category = category,
+                    note = note,
+                    date = System.currentTimeMillis() // Lấy giờ hiện tại
+                )
+
+                // Gọi ViewModel Insert
+                viewModel.addTransaction(newTransaction)
+                Toast.makeText(context, "Đã thêm giao dịch!", Toast.LENGTH_SHORT).show()
+            }
+
+            bottomSheet.show(parentFragmentManager, "AddTransactionTag")
         }
     }
 
