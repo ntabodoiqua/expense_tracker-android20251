@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:title="Trang chủ" />
+
+    <item
+        android:id="@+id/nav_search"
+        android:title="Tìm kiếm" />
+
+    <item
+        android:id="@+id/nav_chart"
+        android:title="Thống kê" />
+
+    <item
+        android:id="@+id/nav_setting"
+        android:title="Cài đặt" />
+
+</menu>
