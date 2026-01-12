@@ -55,10 +55,12 @@ class HomeFragment : Fragment() {
         viewModel.allTransactions.observe(viewLifecycleOwner) { list ->
             list?.let {
                 fullList = it
-                adapter.setData(it)
+                // Lọc chỉ hiển thị giao dịch 2 ngày gần đây
+                val recentTransactions = filterRecentTransactions(it)
+                adapter.setData(recentTransactions)
                 updateDashboard(it)
                 updateNotificationBadge() // Update badge when data changes
-                if (it.isEmpty()) {
+                if (recentTransactions.isEmpty()) {
                     binding.layoutEmpty.visibility = View.VISIBLE
                     binding.recyclerView.visibility = View.GONE
                 } else {
@@ -74,6 +76,11 @@ class HomeFragment : Fragment() {
         // 5. Xử lý sự kiện nút thông báo
         binding.imageView3.setOnClickListener {
             openNotificationPage()
+        }
+
+        // 6. Xử lý nút "Xem thêm" - chuyển sang trang tìm kiếm
+        binding.btnViewMore.setOnClickListener {
+            openSearchPage()
         }
 
         // Cập nhật badge thông báo
@@ -198,6 +205,24 @@ class HomeFragment : Fragment() {
 
         // 5. Kiểm tra giới hạn chi tiêu và hiển thị cảnh báo
         checkSpendingLimits(todayExpense, monthExpense, formatter)
+    }
+
+    private fun filterRecentTransactions(list: List<Transaction>): List<Transaction> {
+        val calendar = java.util.Calendar.getInstance()
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, -2) // Lùi lại 2 ngày
+        val twoDaysAgo = calendar.timeInMillis
+        
+        return list.filter { transaction ->
+            transaction.date >= twoDaysAgo
+        }.sortedByDescending { it.date } // Sắp xếp mới nhất trước
+    }
+
+    private fun openSearchPage() {
+        val searchFragment = SearchFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, searchFragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun checkSpendingLimits(todayExpense: Double, monthExpense: Double, formatter: java.text.NumberFormat) {

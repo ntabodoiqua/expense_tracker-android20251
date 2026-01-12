@@ -2,6 +2,7 @@ package com.example.expensetracker.ui
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.expensetracker.R
@@ -33,6 +34,14 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         // 2. Format Ngày giờ
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // Bỏ giờ phút cho gọn nếu muốn
         holder.binding.tvDate.text = sdf.format(Date(currentItem.date))
+        
+        // Hiển thị ghi chú (nếu có)
+        if (currentItem.note.isNotEmpty()) {
+            holder.binding.tvNote.text = currentItem.note
+            holder.binding.tvNote.visibility = android.view.View.VISIBLE
+        } else {
+            holder.binding.tvNote.visibility = android.view.View.GONE
+        }
 
         // 3. Format Tiền tệ
         val formatter = DecimalFormat("#,### ₫")
