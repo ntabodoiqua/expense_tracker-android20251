@@ -6,11 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.expensetracker.databinding.FragmentHomeBinding
 import com.example.expensetracker.databinding.FragmentSearchBinding
-import com.example.expensetracker.ui.AddTransactionActivity
 import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
 
@@ -33,11 +29,7 @@ class SearchFragment : Fragment() {
         // Setup RecyclerView
         adapter = TransactionAdapter()
 
-        adapter.onItemClick = { transaction ->
-            val intent = Intent(requireContext(), AddTransactionActivity::class.java)
-            intent.putExtra("transaction_data", transaction)
-            startActivity(intent)
-        }
+
 
 
         // Xử lý tìm kiếm

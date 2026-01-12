@@ -1,24 +1,9 @@
 package com.example.expensetracker
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.expensetracker.databinding.ActivityMainBinding
-import com.example.expensetracker.ui.AddTransactionActivity
-import com.example.expensetracker.ui.TransactionAdapter
-import com.example.expensetracker.viewmodel.TransactionViewModel
-import java.text.DecimalFormat
-import androidx.recyclerview.widget.ItemTouchHelper
-import android.widget.Toast
-import androidx.recyclerview.widget.RecyclerView
 
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.utils.ColorTemplate
-import android.graphics.Color
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding

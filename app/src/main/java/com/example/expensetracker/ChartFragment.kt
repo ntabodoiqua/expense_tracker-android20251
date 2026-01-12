@@ -12,8 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.expensetracker.databinding.FragmentHomeBinding
-import com.example.expensetracker.ui.AddTransactionActivity
 import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
 import java.text.DecimalFormat
@@ -45,11 +43,6 @@ class ChartFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
         setupSwipeToDelete()
-        adapter.onItemClick = { transaction ->
-            val intent = Intent(requireContext(), AddTransactionActivity::class.java)
-            intent.putExtra("transaction_data", transaction)
-            startActivity(intent)
-        }
 
         // Setup ViewModel
         viewModel = ViewModelProvider(this)[TransactionViewModel::class.java]
@@ -80,11 +73,6 @@ class ChartFragment : Fragment() {
             .circleCrop() // <-- LỆNH QUAN TRỌNG NHẤT: Cắt thành hình tròn
             .into(binding.imgAvatar) // Nơi hiển thị
 
-        // Sự kiện click nút Thêm
-        binding.fabAdd.setOnClickListener {
-            val intent = Intent(requireContext(), AddTransactionActivity::class.java)
-            startActivity(intent)
-        }
     }
 
     private fun calculateBalance(list: List<com.example.expensetracker.data.Transaction>) {

@@ -4,18 +4,22 @@
 
     <item
         android:id="@+id/nav_home"
+        android:icon="@drawable/house"
         android:title="Trang chủ" />
 
     <item
         android:id="@+id/nav_search"
+        android:icon="@drawable/search"
         android:title="Tìm kiếm" />
 
     <item
         android:id="@+id/nav_chart"
+        android:icon="@drawable/chart_pie"
         android:title="Thống kê" />
 
     <item
         android:id="@+id/nav_setting"
+        android:icon="@drawable/settings"
         android:title="Cài đặt" />
 
 </menu>

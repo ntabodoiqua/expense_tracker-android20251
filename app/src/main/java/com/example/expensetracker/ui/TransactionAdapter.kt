@@ -15,7 +15,6 @@ import java.util.Locale
 class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
     private var transactions = emptyList<Transaction>()
-
     var onItemClick: ((Transaction) -> Unit)? = null
 
     class TransactionViewHolder(val binding: ItemTransactionBinding) : RecyclerView.ViewHolder(binding.root)
@@ -28,41 +27,84 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
         val currentItem = transactions[position]
 
-        // Gán dữ liệu lên giao diện
+        // 1. Gán Text
         holder.binding.tvTitle.text = currentItem.title
 
-        // Format ngày tháng (ví dụ: 09/01/2026)
-        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        // 2. Format Ngày giờ
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // Bỏ giờ phút cho gọn nếu muốn
         holder.binding.tvDate.text = sdf.format(Date(currentItem.date))
 
-        // Format tiền tệ (ví dụ: 50,000 đ)
-        val formatter = DecimalFormat("#,### đ")
-        holder.binding.tvAmount.text = formatter.format(currentItem.amount)
+        // 3. Format Tiền tệ
+        val formatter = DecimalFormat("#,### ₫")
 
-        // Logic màu sắc: Thu nhập màu Xanh, Chi tiêu màu Đỏ
-        if (currentItem.type == 1) { // Thu
-            holder.binding.tvAmount.setTextColor(Color.parseColor("#4CAF50")) // Xanh
+        if (currentItem.type == 1) { // Thu nhập
+            holder.binding.tvAmount.setTextColor(Color.parseColor("#22c55e")) // Xanh lá
             holder.binding.tvAmount.text = "+ ${formatter.format(currentItem.amount)}"
-        } else { // Chi
-            holder.binding.tvAmount.setTextColor(Color.parseColor("#F44336")) // Đỏ
+        } else { // Chi tiêu
+            holder.binding.tvAmount.setTextColor(Color.parseColor("#ef4444")) // Đỏ
             holder.binding.tvAmount.text = "- ${formatter.format(currentItem.amount)}"
         }
+
+        // 4. Xử lý Click
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(currentItem)
         }
-        // Dựa vào tên Category để chọn ảnh
+
+        // ============================================================
+        // 5. XỬ LÝ MÀU SẮC ICON THEO CATEGORY (PHẦN MỚI)
+        // ============================================================
+
         when (currentItem.category) {
-            "Ăn uống" -> holder.binding.imgIcon.setImageResource(R.drawable.ic_food)
-            "Đi lại" -> holder.binding.imgIcon.setImageResource(R.drawable.ic_transport)
-            "Mua sắm" -> holder.binding.imgIcon.setImageResource(R.drawable.ic_shopping)
-            "Lương", "Thưởng" -> holder.binding.imgIcon.setImageResource(R.drawable.ic_money)
-            else -> holder.binding.imgIcon.setImageResource(R.drawable.ic_other)
+            "Ăn uống" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.utensils)
+                // Nền Cam Nhạt
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fed7aa"))
+                // Icon Cam Đậm
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ea580c"))
+            }
+            "Đi lại" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.car)
+                // Nền Xanh Dương Nhạt
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#bae6fd"))
+                // Icon Xanh Dương Đậm
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#2563eb"))
+            }
+            "Mua sắm" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.shopping_bag)
+                // Nền Tím Nhạt
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e9d5ff"))
+                // Icon Tím Đậm
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#9333ea"))
+            }
+            "Giải trí" -> {
+                // Bạn có thể tìm thêm icon ic_gamepad hoặc ic_film
+                holder.binding.imgIcon.setImageResource(R.drawable.shopping_bag)
+                // Nền Vàng Nhạt
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fef08a"))
+                // Icon Vàng Đậm
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ca8a04"))
+            }
+            "Lương", "Thưởng" -> {
+                // Ưu tiên dùng icon tiền
+                if (currentItem.category == "Lương") holder.binding.imgIcon.setImageResource(R.drawable.dollar_sign)
+                else holder.binding.imgIcon.setImageResource(R.drawable.hand_coins)
+
+                // Nền Xanh Lá Nhạt
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#bbf7d0"))
+                // Icon Xanh Lá Đậm
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#16a34a"))
+            }
+            else -> {
+                // Mặc định: Màu xám
+                holder.binding.imgIcon.setImageResource(R.drawable.circle)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e5e7eb"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#4b5563"))
+            }
         }
     }
 
     override fun getItemCount() = transactions.size
 
-    // Hàm để cập nhật dữ liệu mới từ Activity
     fun setData(newTransactions: List<Transaction>) {
         this.transactions = newTransactions
         notifyDataSetChanged()
