@@ -81,22 +81,21 @@
     </androidx.cardview.widget.CardView>
 
     <!-- Transaction Type Chips -->
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupType"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:gravity="center"
-        app:selectionRequired="true"
-        app:singleSelection="true">
+        android:orientation="horizontal">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipExpense"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="52dp"
             android:layout_weight="1"
+            android:checkable="true"
             android:checked="true"
+            android:gravity="center"
             android:text="💸 Chi tiêu"
             android:textColor="@color/chip_expense_text"
             android:textSize="15sp"
@@ -104,15 +103,17 @@
             app:chipBackgroundColor="@color/chip_expense_bg"
             app:chipCornerRadius="12dp"
             app:chipStrokeColor="#FECACA"
-            app:chipStrokeWidth="1dp" />
+            app:chipStrokeWidth="1.5dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipIncome"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="52dp"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
+            android:checkable="true"
+            android:gravity="center"
             android:text="💰 Thu nhập"
             android:textColor="@color/chip_income_text"
             android:textSize="15sp"
@@ -120,9 +121,9 @@
             app:chipBackgroundColor="@color/chip_income_bg"
             app:chipCornerRadius="12dp"
             app:chipStrokeColor="#BBF7D0"
-            app:chipStrokeWidth="1dp" />
+            app:chipStrokeWidth="1.5dp" />
 
-    </com.google.android.material.chip.ChipGroup>
+    </LinearLayout>
 
     <!-- Form Fields -->
     <LinearLayout
