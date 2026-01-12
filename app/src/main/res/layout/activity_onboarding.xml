@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -143,36 +145,6 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPersonName"
                         android:maxLength="30"
-                        android:padding="16dp"
-                        android:textColor="#1F2937"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Initial Balance Input -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutBalance"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:hint="Số dư ban đầu (VNĐ)"
-                    android:textColorHint="#64748B"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxStrokeColor="@color/text_input_stroke_color"
-                    app:helperText="Tùy chọn - có thể bỏ qua"
-                    app:helperTextTextColor="#94A3B8"
-                    app:hintTextColor="#475569"
-                    app:startIconDrawable="@drawable/dollar_sign"
-                    app:startIconTint="#64748B">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etInitialBalance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="numberDecimal"
                         android:padding="16dp"
                         android:textColor="#1F2937"
                         android:textSize="16sp" />

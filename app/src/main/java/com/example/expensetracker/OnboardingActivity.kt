@@ -74,7 +74,6 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun saveUserInfo(skipMode: Boolean) {
         val name = binding.etName.text.toString().trim()
-        val balanceStr = binding.etInitialBalance.text.toString().trim()
 
         // Validate tên nếu không phải skip mode
         if (!skipMode && name.isEmpty()) {
@@ -101,10 +100,6 @@ class OnboardingActivity : AppCompatActivity() {
                 userPreferences.userAvatar = ""
             }
         }
-
-        // Lưu số dư ban đầu
-        val initialBalance = balanceStr.toDoubleOrNull() ?: 0.0
-        userPreferences.initialBalance = initialBalance
 
         // Đánh dấu đã hoàn thành onboarding
         userPreferences.isFirstTime = false
