@@ -9,10 +9,19 @@ import com.example.expensetracker.R
 import com.example.expensetracker.data.Transaction
 import com.example.expensetracker.databinding.ActivityAddTransactionBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 class AddTransactionFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: ActivityAddTransactionBinding
+    private val calendar = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     // Callback để gửi dữ liệu về HomeFragment sau khi lưu
     var onSaveClick: ((Double, String, String, String) -> Unit)? = null
@@ -29,32 +38,40 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Cài đặt Dropdown Danh mục
+        // 1. Cài đặt Dropdown Danh mục với layout đẹp hơn
         val categories = listOf("Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Lương", "Thưởng", "Khác")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, categories)
+        val adapter = ArrayAdapter(requireContext(), R.layout.item_dropdown, categories)
         binding.autoCompleteCategory.setAdapter(adapter)
 
-        // 2. Xử lý nút Lưu
+        // 2. Set ngày mặc định là hôm nay
+        binding.etDate.setText(dateFormat.format(calendar.time))
+
+        // 3. Xử lý dữ liệu truyền vào (nếu có - trường hợp sửa)
         val transactionArg = arguments?.getSerializable("transaction_data") as? Transaction
 
         if (transactionArg != null) {
             // --- TRƯỜNG HỢP: SỬA (UPDATE) ---
-            binding.tvTitle.text = "Chỉnh sửa giao dịch"
+            binding.tvTitle.text = "✏️ Chỉnh sửa giao dịch"
+            binding.btnSaveTransaction.text = "💾 Cập nhật"
 
             // Điền dữ liệu cũ vào ô
-            binding.etAmount.setText(transactionArg.amount.toString().replace(".0", ""))
+            binding.etAmount.setText(transactionArg.amount.toLong().toString())
             binding.etNote.setText(transactionArg.note)
             binding.autoCompleteCategory.setText(transactionArg.category, false)
+
+            // Set ngày từ dữ liệu cũ
+            binding.etDate.setText(dateFormat.format(transactionArg.date))
 
             if (transactionArg.type == 1) binding.chipIncome.isChecked = true
             else binding.chipExpense.isChecked = true
         } else {
             // --- TRƯỜNG HỢP: THÊM MỚI (ADD) ---
-            binding.tvTitle.text = "Thêm Giao dịch mới"
+            binding.tvTitle.text = "➕ Thêm giao dịch mới"
+            binding.btnSaveTransaction.text = "💾 Lưu"
         }
 
         // =========================================================
-        // 3. XỬ LÝ SỰ KIỆN NÚT BẤM
+        // 4. XỬ LÝ SỰ KIỆN NÚT BẤM
         // =========================================================
 
         // Nút HỦY -> Đóng luôn
@@ -64,52 +81,76 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
 
         // Nút LƯU / CẬP NHẬT
         binding.btnSaveTransaction.setOnClickListener {
-            val amountStr = binding.etAmount.text.toString()
+            val amountStr = binding.etAmount.text.toString().trim()
+            val category = binding.autoCompleteCategory.text.toString().trim()
 
-            if (amountStr.isNotEmpty()) {
+            // Validate
+            var isValid = true
+
+            if (amountStr.isEmpty() || amountStr.toDoubleOrNull() == null || amountStr.toDouble() <= 0) {
+                binding.layoutAmount.error = "Vui lòng nhập số tiền hợp lệ"
+                isValid = false
+            } else {
+                binding.layoutAmount.error = null
+            }
+
+            if (category.isEmpty()) {
+                binding.layoutCategory.error = "Vui lòng chọn danh mục"
+                isValid = false
+            } else {
+                binding.layoutCategory.error = null
+            }
+
+            if (isValid) {
                 val amount = amountStr.toDouble()
-                val note = binding.etNote.text.toString()
-                val category = binding.autoCompleteCategory.text.toString()
+                val note = binding.etNote.text.toString().trim()
                 val type = if (binding.chipIncome.isChecked) "Thu nhập" else "Chi tiêu"
 
                 // Gửi dữ liệu về HomeFragment
                 onSaveClick?.invoke(amount, type, category, note)
                 dismiss()
-            } else {
-                binding.layoutAmount.error = "Vui lòng nhập số tiền"
             }
         }
 
-        // 3. Xử lý chọn ngày
+        // 5. Xử lý chọn ngày
         binding.etDate.setOnClickListener {
-            // 1. Lấy ngày tháng năm hiện tại để hiển thị mặc định trong lịch
-            val calendar = java.util.Calendar.getInstance()
-            val year = calendar.get(java.util.Calendar.YEAR)
-            val month = calendar.get(java.util.Calendar.MONTH)
-            val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
-
-            // 2. Tạo DatePickerDialog
-            val datePickerDialog = android.app.DatePickerDialog(
-                requireContext(),
-                { _, selectedYear, selectedMonth, selectedDay ->
-                    // 3. Xử lý khi người dùng chọn xong ngày
-                    // Tạo một Calendar mới để set ngày vừa chọn (vì selectedMonth chạy từ 0-11)
-                    val selectedCalendar = java.util.Calendar.getInstance()
-                    selectedCalendar.set(selectedYear, selectedMonth, selectedDay)
-
-                    // 4. Định dạng thành chuỗi "dd/MM/yyyy" (Ví dụ: 09/01/2026)
-                    val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-                    val formattedDate = dateFormat.format(selectedCalendar.time)
-
-                    // 5. Gán vào ô nhập liệu
-                    binding.etDate.setText(formattedDate)
-                },
-                year, month, day
-            )
-
-            // 6. Hiển thị lên
-            datePickerDialog.show()
+            showDatePicker()
         }
+
+        // Click vào icon cũng mở DatePicker
+        binding.layoutDate.setEndIconOnClickListener {
+            showDatePicker()
+        }
+    }
+
+    private fun showDatePicker() {
+        // Tạo constraint để không cho chọn ngày tương lai
+        val constraintsBuilder = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointBackward.now())
+
+        // Tạo Material DatePicker
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Chọn ngày giao dịch")
+            .setSelection(calendar.timeInMillis)
+            .setCalendarConstraints(constraintsBuilder.build())
+            .setTheme(R.style.CustomMaterialDatePicker)
+            .build()
+
+        // Xử lý khi chọn ngày
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            // selection là UTC timestamp, cần convert về local
+            val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            utcCalendar.timeInMillis = selection
+            
+            calendar.set(
+                utcCalendar.get(Calendar.YEAR),
+                utcCalendar.get(Calendar.MONTH),
+                utcCalendar.get(Calendar.DAY_OF_MONTH)
+            )
+            binding.etDate.setText(dateFormat.format(calendar.time))
+        }
+
+        datePicker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     // Làm cho nền trong suốt để thấy được bo góc

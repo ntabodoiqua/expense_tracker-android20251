@@ -1,6 +1,7 @@
 package com.example.expensetracker
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,12 +17,14 @@ import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
 import com.bumptech.glide.Glide
 import com.example.expensetracker.data.Transaction
+import com.example.expensetracker.data.UserPreferences
 import com.example.expensetracker.ui.AddTransactionFragment
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var viewModel: TransactionViewModel
     private lateinit var adapter: TransactionAdapter
+    private lateinit var userPreferences: UserPreferences
 
     private var fullList: List<com.example.expensetracker.data.Transaction> = emptyList()
 
@@ -35,6 +38,9 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Khởi tạo UserPreferences
+        userPreferences = UserPreferences(requireContext())
 
         // 1. Setup RecyclerView
         adapter = TransactionAdapter()
@@ -61,11 +67,8 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // 4. Load Avatar tròn
-        Glide.with(this)
-            .load(R.drawable.avatar)
-            .circleCrop()
-            .into(binding.imgAvatar)
+        // 4. Load thông tin người dùng
+        loadUserInfo()
 
         // ==============================================================
         // 5. XỬ LÝ SỰ KIỆN SỬA (BẤM VÀO ITEM) - Đã sửa lỗi Intent
@@ -187,6 +190,42 @@ class HomeFragment : Fragment() {
         // Gắn helper vào RecyclerView
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+    }
+
+    // Load thông tin người dùng từ SharedPreferences
+    private fun loadUserInfo() {
+        // Hiển thị tên người dùng
+        binding.Username.text = userPreferences.userName
+
+        // Hiển thị avatar
+        val avatarUri = userPreferences.userAvatar
+        if (avatarUri.isNotEmpty()) {
+            try {
+                Glide.with(this)
+                    .load(Uri.parse(avatarUri))
+                    .circleCrop()
+                    .placeholder(R.drawable.avatar)
+                    .error(R.drawable.avatar)
+                    .into(binding.imgAvatar)
+            } catch (e: Exception) {
+                loadDefaultAvatar()
+            }
+        } else {
+            loadDefaultAvatar()
+        }
+    }
+
+    private fun loadDefaultAvatar() {
+        Glide.with(this)
+            .load(R.drawable.avatar)
+            .circleCrop()
+            .into(binding.imgAvatar)
+    }
+
+    // Refresh thông tin khi quay lại Fragment
+    override fun onResume() {
+        super.onResume()
+        loadUserInfo()
     }
 
 }

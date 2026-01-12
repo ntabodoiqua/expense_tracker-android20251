@@ -6,10 +6,45 @@
     </style>
 
     <style name="Theme.ExpenseTracker" parent="Base.Theme.ExpenseTracker" />
+
+    <!-- Custom BottomSheet Dialog -->
     <style name="CustomBottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
     </style>
+
     <style name="CustomBottomSheet" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!-- Custom DatePicker Dialog -->
+    <style name="CustomDatePickerDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimary">#3B82F6</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorAccent">#3B82F6</item>
+        <item name="android:textColorPrimary">#1F2937</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <!-- Custom Material DatePicker -->
+    <style name="CustomMaterialDatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">#3B82F6</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">#1F2937</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent</item>
+        <item name="materialCalendarHeaderTitle">@style/MaterialCalendarHeaderTitle</item>
+        <item name="materialCalendarHeaderSelection">@style/MaterialCalendarHeaderSelection</item>
+    </style>
+
+    <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="MaterialCalendarHeaderTitle" parent="Widget.MaterialComponents.MaterialCalendar.HeaderTitle">
+        <item name="android:textColor">#1F2937</item>
+    </style>
+
+    <style name="MaterialCalendarHeaderSelection" parent="Widget.MaterialComponents.MaterialCalendar.HeaderSelection">
+        <item name="android:textColor">#1F2937</item>
     </style>
 </resources>
