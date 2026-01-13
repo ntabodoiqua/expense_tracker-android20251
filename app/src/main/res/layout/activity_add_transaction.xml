@@ -6,13 +6,13 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_modal"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:orientation="vertical">
 
     <View
         android:id="@+id/dragHandle"
         android:layout_width="50dp"
         android:layout_height="5dp"
+        android:layout_marginVertical="10dp"
         android:background="#9ca3af" />
 
     <TextView
@@ -22,180 +22,198 @@
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:text="Thêm giao dịch mới"
-        android:textColor="#1F2937"
-        android:textSize="20sp"
+        android:textColor="#FF6B00"
+        android:textSize="32sp"
         android:textStyle="bold" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutAmount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:boxStrokeColor="#00000000"
-        app:boxStrokeWidth="0dp"
-        app:hintEnabled="false">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:gravity="center"
-            android:hint="0 đ"
-            android:inputType="numberDecimal"
-            android:textColor="#0066FF"
-            android:textColorHint="#BDBDBD"
-            android:textSize="40sp"
-            android:textStyle="bold" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/tvCurrencyLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Số tiền"
-        android:textColor="#757575"
-        android:textSize="16sp" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipIncome"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Thu nhập"
-            android:textColor="#4CAF50"
-            android:textSize="16sp"
-            app:chipBackgroundColor="#E8F5E9"
-            app:chipIcon="@drawable/arrow_up"
-            app:chipIconTint="#4CAF50" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipExpense"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Chi tiêu"
-            android:textColor="#F44336"
-            android:textSize="16sp"
-            app:chipBackgroundColor="#FFEBEE"
-            app:chipIcon="@drawable/arrow_down"
-            app:chipIconTint="#F44336" />
-
-
-    </com.google.android.material.chip.ChipGroup>
 
     <LinearLayout
         android:id="@+id/layoutForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:orientation="vertical">
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupType"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Danh mục"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:startIconDrawable="@drawable/layout_grid">
+            android:layout_marginBottom="20dp"
+            app:chipSpacingHorizontal="20dp"
+            app:chipSpacingVertical="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCurrencyLabel"
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCompleteCategory"
-                android:layout_width="match_parent"
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipIncome"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:text="Danh mục" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Thu nhập"
+                android:textColor="#22c55e"
+                android:textSize="18sp"
+                app:chipBackgroundColor="#dcfce7"
+                app:chipCornerRadius="10dp"
+                app:chipEndPadding="10dp"
+                app:chipIcon="@drawable/arrow_up"
+                app:chipIconEnabled="true"
+                app:chipIconTint="#22c55e"
+                app:chipMinHeight="50dp"
+                app:chipMinTouchTargetSize="50dp"
+                app:chipStartPadding="10dp"
+                app:chipStrokeColor="#22c55e"
+                app:chipStrokeWidth="1dp"
+                app:textEndPadding="10dp"
+                app:textStartPadding="10dp" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipExpense"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Chi tiêu"
+                android:textColor="#ef4444"
+                android:textSize="18sp"
+                app:chipBackgroundColor="#fee2e2"
+                app:chipCornerRadius="10dp"
+                app:chipEndPadding="10dp"
+                app:chipIcon="@drawable/arrow_down"
+                app:chipIconEnabled="true"
+                app:chipIconTint="#ef4444"
+                app:chipMinHeight="50dp"
+                app:chipMinTouchTargetSize="50dp"
+                app:chipStartPadding="10dp"
+                app:chipStrokeColor="#ef4444"
+                app:chipStrokeWidth="1dp"
+                app:textEndPadding="10dp"
+                app:textStartPadding="10dp" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <TextView
+            android:id="@+id/tvCategory"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:hint="Ngày"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:startIconDrawable="@drawable/calendar_days">
+            android:layout_height="50dp"
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="false"
-                android:inputType="none"
-                android:text="Ngày"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_form_fields"
+            android:clickable="true"
+            android:drawableStart="@drawable/layout_grid"
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layoutNote"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:drawableEnd="@drawable/chevron_down"
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:focusable="true"
+            android:gravity="center_vertical"
+
+            android:hint="Loại giao dịch"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18dp" />
+
+        <EditText
+            android:id="@+id/etAmount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:hint="Ghi chú"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:startIconDrawable="@drawable/pencil_line">
+            android:layout_height="50dp"
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapSentences"
-                android:text="Ghi chú"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_form_fields"
+            android:backgroundTint="@null"
+
+            android:drawableStart="@drawable/dollar_sign"
+            android:drawablePadding="10dp"
+
+            android:drawableTint="#0033CC"
+            android:ellipsize="end"
+            android:hint="Số tiền"
+            android:inputType="textCapSentences"
+
+            android:maxLines="1"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_form_fields"
+            android:clickable="true"
+
+            android:drawableStart="@drawable/calendar_days"
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:focusable="true"
+            android:gravity="center_vertical"
+
+            android:hint="Ngày giao dịch"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18dp" />
+
+        <EditText
+            android:id="@+id/etNote"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+
+            android:background="@drawable/bg_form_fields"
+            android:backgroundTint="@null"
+            android:drawableStart="@drawable/pencil_line"
+
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:ellipsize="end"
+            android:hint="Ghi chú (tùy chọn)"
+            android:inputType="textCapSentences"
+            android:maxLines="1"
+
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18dp" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="20dp"
         android:orientation="horizontal">
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnCancel"
+            android:id="@+id/btnCancelTransaction"
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="10dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="10dp"
             android:layout_weight="1"
             android:background="@drawable/bg_cancel_button"
             android:text="Hủy"
             android:textAllCaps="false"
-            android:textColor="#dc2626"
+            android:textColor="#0033CC"
             android:textSize="20sp"
             android:textStyle="bold" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnSaveTransaction"
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="10dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="20dp"
             android:layout_weight="1"
             android:background="@drawable/bg_save_button"
-            android:stateListAnimator="@null"
             android:text="Lưu"
             android:textAllCaps="false"
-            android:textColor="#16a34a"
+            android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
 

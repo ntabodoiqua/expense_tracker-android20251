@@ -80,7 +80,7 @@ class HomeFragment : Fragment() {
             bottomSheet.arguments = bundle
 
             // Xử lý khi bấm nút "Cập nhật" ở bên kia
-            bottomSheet.onSaveClick = { amount, typeStr, category, note ->
+            bottomSheet.onSaveClick = { amount, typeStr, category, note, date ->
                 // Convert chuỗi "Thu nhập" -> số 1, "Chi tiêu" -> số 0
                 val typeInt = if (typeStr == "Thu nhập") 1 else 0
 
@@ -89,7 +89,8 @@ class HomeFragment : Fragment() {
                     amount = amount,
                     type = typeInt,
                     category = category,
-                    note = note
+                    note = note,
+                    date = date
                 )
 
                 // Gọi ViewModel Update
@@ -107,7 +108,7 @@ class HomeFragment : Fragment() {
             val bottomSheet = AddTransactionFragment()
 
             // Xử lý khi bấm nút "Lưu" ở bên kia
-            bottomSheet.onSaveClick = { amount, typeStr, category, note ->
+            bottomSheet.onSaveClick = { amount, typeStr, category, note, date ->
                 val typeInt = if (typeStr == "Thu nhập") 1 else 0
 
                 // Tạo giao dịch mới (ID = 0 để Room tự tăng)
@@ -118,7 +119,7 @@ class HomeFragment : Fragment() {
                     type = typeInt,
                     category = category,
                     note = note,
-                    date = System.currentTimeMillis() // Lấy giờ hiện tại
+                    date = date
                 )
 
                 // Gọi ViewModel Insert
