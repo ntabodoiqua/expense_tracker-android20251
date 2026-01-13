@@ -1,6 +1,7 @@
 package com.example.expensetracker
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,12 +17,14 @@ import com.example.expensetracker.ui.TransactionAdapter
 import com.example.expensetracker.viewmodel.TransactionViewModel
 import com.bumptech.glide.Glide
 import com.example.expensetracker.data.Transaction
+import com.example.expensetracker.data.UserPreferences
 import com.example.expensetracker.ui.AddTransactionFragment
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var viewModel: TransactionViewModel
     private lateinit var adapter: TransactionAdapter
+    private lateinit var userPreferences: UserPreferences
 
     private var fullList: List<com.example.expensetracker.data.Transaction> = emptyList()
 
@@ -36,6 +39,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Khởi tạo UserPreferences
+        userPreferences = UserPreferences(requireContext())
+
         // 1. Setup RecyclerView
         adapter = TransactionAdapter()
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -49,9 +55,12 @@ class HomeFragment : Fragment() {
         viewModel.allTransactions.observe(viewLifecycleOwner) { list ->
             list?.let {
                 fullList = it
-                adapter.setData(it)
+                // Lọc chỉ hiển thị giao dịch 2 ngày gần đây
+                val recentTransactions = filterRecentTransactions(it)
+                adapter.setData(recentTransactions)
                 updateDashboard(it)
-                if (it.isEmpty()) {
+                updateNotificationBadge() // Update badge when data changes
+                if (recentTransactions.isEmpty()) {
                     binding.layoutEmpty.visibility = View.VISIBLE
                     binding.recyclerView.visibility = View.GONE
                 } else {
@@ -61,14 +70,24 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // 4. Load Avatar tròn
-        Glide.with(this)
-            .load(R.drawable.avatar)
-            .circleCrop()
-            .into(binding.imgAvatar)
+        // 4. Load thông tin người dùng
+        loadUserInfo()
+
+        // 5. Xử lý sự kiện nút thông báo
+        binding.imageView3.setOnClickListener {
+            openNotificationPage()
+        }
+
+        // 6. Xử lý nút "Xem thêm" - chuyển sang trang tìm kiếm
+        binding.btnViewMore.setOnClickListener {
+            openSearchPage()
+        }
+
+        // Cập nhật badge thông báo
+        updateNotificationBadge()
 
         // ==============================================================
-        // 5. XỬ LÝ SỰ KIỆN SỬA (BẤM VÀO ITEM) - Đã sửa lỗi Intent
+        // 6. XỬ LÝ SỰ KIỆN SỬA (BẤM VÀO ITEM) - Đã sửa lỗi Intent
         // ==============================================================
         adapter.onItemClick = { transaction ->
             // Tạo BottomSheet
@@ -84,7 +103,7 @@ class HomeFragment : Fragment() {
                 // Convert chuỗi "Thu nhập" -> số 1, "Chi tiêu" -> số 0
                 val typeInt = if (typeStr == "Thu nhập") 1 else 0
 
-                // Tạo đối tượng mới dựa trên cái cũ (giữ nguyên ID và Ngày tháng)
+                // Tạo đối tượng mới dựa trên cái cũ (giữ nguyên ID, cập nhật ngày)
                 val updatedTransaction = transaction.copy(
                     amount = amount,
                     type = typeInt,
@@ -119,7 +138,7 @@ class HomeFragment : Fragment() {
                     type = typeInt,
                     category = category,
                     note = note,
-                    date = date
+                    date = date // Sử dụng ngày đã chọn từ DatePicker
                 )
 
                 // Gọi ViewModel Insert
@@ -135,6 +154,14 @@ class HomeFragment : Fragment() {
     private fun updateDashboard(list: List<Transaction>) {
         var totalIncome = 0.0
         var totalExpense = 0.0
+        var todayExpense = 0.0
+        var monthExpense = 0.0
+
+        // Lấy ngày hiện tại
+        val calendar = java.util.Calendar.getInstance()
+        val today = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+        val currentYear = calendar.get(java.util.Calendar.YEAR)
+        val currentMonth = calendar.get(java.util.Calendar.MONTH)
 
         // 1. Duyệt qua danh sách để cộng dồn
         for (transaction in list) {
@@ -144,6 +171,24 @@ class HomeFragment : Fragment() {
             } else {
                 // Nếu là Chi tiêu (Type = 0 hoặc khác 1)
                 totalExpense += transaction.amount
+
+                // Tính chi tiêu theo ngày và tháng
+                val transactionCalendar = java.util.Calendar.getInstance()
+                transactionCalendar.timeInMillis = transaction.date
+
+                val transactionDay = transactionCalendar.get(java.util.Calendar.DAY_OF_YEAR)
+                val transactionYear = transactionCalendar.get(java.util.Calendar.YEAR)
+                val transactionMonth = transactionCalendar.get(java.util.Calendar.MONTH)
+
+                // Chi tiêu trong ngày
+                if (transactionDay == today && transactionYear == currentYear) {
+                    todayExpense += transaction.amount
+                }
+
+                // Chi tiêu trong tháng
+                if (transactionMonth == currentMonth && transactionYear == currentYear) {
+                    monthExpense += transaction.amount
+                }
             }
         }
 
@@ -155,8 +200,73 @@ class HomeFragment : Fragment() {
 
         // 4. Gán vào TextView
         binding.currentBalanceValue.text = formatter.format(totalBalance)
-        binding.tvIncome.text = formatter.format(totalIncome)   // ID này bạn vừa tạo ở bước trước
-        binding.tvExpense.text = formatter.format(totalExpense) // ID này bạn vừa tạo ở bước trước
+        binding.tvIncome.text = formatter.format(totalIncome)
+        binding.tvExpense.text = formatter.format(totalExpense)
+
+        // 5. Kiểm tra giới hạn chi tiêu và hiển thị cảnh báo
+        checkSpendingLimits(todayExpense, monthExpense, formatter)
+    }
+
+    private fun filterRecentTransactions(list: List<Transaction>): List<Transaction> {
+        val calendar = java.util.Calendar.getInstance()
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, -2) // Lùi lại 2 ngày
+        val twoDaysAgo = calendar.timeInMillis
+        
+        return list.filter { transaction ->
+            transaction.date >= twoDaysAgo
+        }.sortedByDescending { it.date } // Sắp xếp mới nhất trước
+    }
+
+    private fun openSearchPage() {
+        val searchFragment = SearchFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, searchFragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun checkSpendingLimits(todayExpense: Double, monthExpense: Double, formatter: java.text.NumberFormat) {
+        val warnings = mutableListOf<String>()
+
+        // Kiểm tra giới hạn ngày
+        if (userPreferences.isDailyLimitEnabled && userPreferences.dailyLimit > 0) {
+            val dailyLimit = userPreferences.dailyLimit
+            val dailyPercent = (todayExpense / dailyLimit * 100).toInt()
+
+            if (todayExpense >= dailyLimit) {
+                warnings.add("🚨 Đã vượt giới hạn ngày!\nĐã chi: ${formatter.format(todayExpense)} / ${formatter.format(dailyLimit)}")
+            } else if (dailyPercent >= 80) {
+                warnings.add("⚠️ Sắp đạt giới hạn ngày (${dailyPercent}%)\nĐã chi: ${formatter.format(todayExpense)} / ${formatter.format(dailyLimit)}")
+            }
+        }
+
+        // Kiểm tra giới hạn tháng
+        if (userPreferences.isMonthlyLimitEnabled && userPreferences.monthlyLimit > 0) {
+            val monthlyLimit = userPreferences.monthlyLimit
+            val monthlyPercent = (monthExpense / monthlyLimit * 100).toInt()
+
+            if (monthExpense >= monthlyLimit) {
+                warnings.add("🚨 Đã vượt giới hạn tháng!\nĐã chi: ${formatter.format(monthExpense)} / ${formatter.format(monthlyLimit)}")
+            } else if (monthlyPercent >= 80) {
+                warnings.add("⚠️ Sắp đạt giới hạn tháng (${monthlyPercent}%)\nĐã chi: ${formatter.format(monthExpense)} / ${formatter.format(monthlyLimit)}")
+            }
+        }
+
+        // Hiển thị cảnh báo nếu có
+        if (warnings.isNotEmpty()) {
+            showSpendingWarning(warnings)
+        } else {
+            hideSpendingWarning()
+        }
+    }
+
+    private fun showSpendingWarning(warnings: List<String>) {
+        binding.layoutWarning.visibility = View.VISIBLE
+        binding.tvWarning.text = warnings.joinToString("\n\n")
+    }
+
+    private fun hideSpendingWarning() {
+        binding.layoutWarning.visibility = View.GONE
     }
 
     private fun setupSwipeToDelete() {
@@ -188,6 +298,219 @@ class HomeFragment : Fragment() {
         // Gắn helper vào RecyclerView
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
+    }
+
+    // Load thông tin người dùng từ SharedPreferences
+    private fun loadUserInfo() {
+        // Hiển thị tên người dùng
+        binding.Username.text = userPreferences.userName
+
+        // Hiển thị avatar
+        val avatarUri = userPreferences.userAvatar
+        if (avatarUri.isNotEmpty()) {
+            try {
+                Glide.with(this)
+                    .load(Uri.parse(avatarUri))
+                    .circleCrop()
+                    .placeholder(R.drawable.avatar)
+                    .error(R.drawable.avatar)
+                    .into(binding.imgAvatar)
+            } catch (e: Exception) {
+                loadDefaultAvatar()
+            }
+        } else {
+            loadDefaultAvatar()
+        }
+    }
+
+    private fun loadDefaultAvatar() {
+        Glide.with(this)
+            .load(R.drawable.avatar)
+            .circleCrop()
+            .into(binding.imgAvatar)
+    }
+
+    private fun openNotificationPage() {
+        val notificationFragment = NotificationFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, notificationFragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun updateNotificationBadge() {
+        // Count unread notifications
+        val count = countUnreadNotifications()
+        
+        if (count > 0) {
+            binding.tvNotificationBadge.visibility = View.VISIBLE
+            binding.tvNotificationBadge.text = if (count > 9) "9+" else count.toString()
+        } else {
+            binding.tvNotificationBadge.visibility = View.GONE
+        }
+    }
+
+    private fun countUnreadNotifications(): Int {
+        var count = 0
+        
+        // Check spending limit notifications
+        if (userPreferences.isDailyLimitEnabled) {
+            val todayExpense = calculateTodayExpense()
+            val dailyLimit = userPreferences.dailyLimit
+            if (todayExpense >= dailyLimit * 0.8) {
+                count++
+            }
+        }
+        
+        if (userPreferences.isMonthlyLimitEnabled) {
+            val monthExpense = calculateMonthExpense()
+            val monthlyLimit = userPreferences.monthlyLimit
+            if (monthExpense >= monthlyLimit * 0.8) {
+                count++
+            }
+        }
+        
+        // Check for today's transactions
+        val todayTransactions = fullList.filter { transaction ->
+            val calendar = java.util.Calendar.getInstance()
+            val today = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val currentYear = calendar.get(java.util.Calendar.YEAR)
+            
+            val transactionCalendar = java.util.Calendar.getInstance()
+            transactionCalendar.timeInMillis = transaction.date
+            val transactionDay = transactionCalendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val transactionYear = transactionCalendar.get(java.util.Calendar.YEAR)
+            
+            transactionDay == today && transactionYear == currentYear
+        }
+        
+        if (todayTransactions.isNotEmpty()) {
+            count++
+        }
+        
+        return count
+    }
+
+    private fun hasUnreadNotifications(): Boolean {
+        val lastReadTime = userPreferences.lastNotificationReadTime
+        
+        // Check if there are new spending limit warnings since last read
+        if (userPreferences.isDailyLimitEnabled) {
+            val todayExpense = calculateTodayExpense()
+            val dailyLimit = userPreferences.dailyLimit
+            if (todayExpense >= dailyLimit * 0.8) {
+                return true
+            }
+        }
+        
+        if (userPreferences.isMonthlyLimitEnabled) {
+            val monthExpense = calculateMonthExpense()
+            val monthlyLimit = userPreferences.monthlyLimit
+            if (monthExpense >= monthlyLimit * 0.8) {
+                return true
+            }
+        }
+        
+        return false
+    }
+
+    private fun showNotifications() {
+        // Tính toán thông báo dựa trên chi tiêu
+        val notifications = mutableListOf<String>()
+        
+        // Kiểm tra giới hạn chi tiêu
+        if (userPreferences.isDailyLimitEnabled) {
+            val dailyLimit = userPreferences.dailyLimit
+            val todayExpense = calculateTodayExpense()
+            
+            if (todayExpense >= dailyLimit) {
+                notifications.add("⚠️ Bạn đã vượt giới hạn chi tiêu hàng ngày!")
+            } else if (todayExpense >= dailyLimit * 0.8) {
+                notifications.add("⚡ Bạn đã chi ${(todayExpense / dailyLimit * 100).toInt()}% giới hạn ngày hôm nay")
+            }
+        }
+        
+        if (userPreferences.isMonthlyLimitEnabled) {
+            val monthlyLimit = userPreferences.monthlyLimit
+            val monthExpense = calculateMonthExpense()
+            
+            if (monthExpense >= monthlyLimit) {
+                notifications.add("⚠️ Bạn đã vượt giới hạn chi tiêu tháng này!")
+            } else if (monthExpense >= monthlyLimit * 0.8) {
+                notifications.add("⚡ Bạn đã chi ${(monthExpense / monthlyLimit * 100).toInt()}% giới hạn tháng này")
+            }
+        }
+        
+        // Thêm thông tin thống kê
+        val transactionCount = fullList.size
+        val todayTransactions = fullList.filter { transaction ->
+            val calendar = java.util.Calendar.getInstance()
+            val today = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val currentYear = calendar.get(java.util.Calendar.YEAR)
+            
+            val transactionCalendar = java.util.Calendar.getInstance()
+            transactionCalendar.timeInMillis = transaction.date
+            val transactionDay = transactionCalendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val transactionYear = transactionCalendar.get(java.util.Calendar.YEAR)
+            
+            transactionDay == today && transactionYear == currentYear
+        }.size
+        
+        notifications.add("📊 Hôm nay: $todayTransactions giao dịch")
+        notifications.add("📈 Tổng cộng: $transactionCount giao dịch")
+        
+        // Hiển thị dialog
+        val message = if (notifications.isEmpty()) {
+            "🔔 Không có thông báo mới"
+        } else {
+            notifications.joinToString("\n\n")
+        }
+        
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("🔔 Thông báo")
+            .setMessage(message)
+            .setPositiveButton("Đóng", null)
+            .show()
+    }
+    
+    private fun calculateTodayExpense(): Double {
+        val calendar = java.util.Calendar.getInstance()
+        val today = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+        val currentYear = calendar.get(java.util.Calendar.YEAR)
+        
+        return fullList.filter { transaction ->
+            if (transaction.type != 0) return@filter false
+            
+            val transactionCalendar = java.util.Calendar.getInstance()
+            transactionCalendar.timeInMillis = transaction.date
+            val transactionDay = transactionCalendar.get(java.util.Calendar.DAY_OF_YEAR)
+            val transactionYear = transactionCalendar.get(java.util.Calendar.YEAR)
+            
+            transactionDay == today && transactionYear == currentYear
+        }.sumOf { it.amount }
+    }
+    
+    private fun calculateMonthExpense(): Double {
+        val calendar = java.util.Calendar.getInstance()
+        val currentMonth = calendar.get(java.util.Calendar.MONTH)
+        val currentYear = calendar.get(java.util.Calendar.YEAR)
+        
+        return fullList.filter { transaction ->
+            if (transaction.type != 0) return@filter false
+            
+            val transactionCalendar = java.util.Calendar.getInstance()
+            transactionCalendar.timeInMillis = transaction.date
+            val transactionMonth = transactionCalendar.get(java.util.Calendar.MONTH)
+            val transactionYear = transactionCalendar.get(java.util.Calendar.YEAR)
+            
+            transactionMonth == currentMonth && transactionYear == currentYear
+        }.sumOf { it.amount }
+    }
+
+    // Refresh thông tin khi quay lại Fragment
+    override fun onResume() {
+        super.onResume()
+        loadUserInfo()
     }
 
 }

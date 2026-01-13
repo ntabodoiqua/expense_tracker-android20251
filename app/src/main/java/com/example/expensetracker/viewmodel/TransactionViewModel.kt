@@ -35,5 +35,11 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             dao.updateTransaction(transaction)
         }
     }
+    // Hàm xóa tất cả giao dịch
+    fun deleteAllTransactions() {
+        viewModelScope.launch {
+            dao.deleteAllTransactions()
+        }
+    }
 
 }
