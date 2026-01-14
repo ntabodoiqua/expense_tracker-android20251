@@ -122,7 +122,7 @@
             android:drawableTint="#0033CC"
             android:ellipsize="end"
             android:hint="Số tiền"
-            android:inputType="textCapSentences"
+            android:inputType="number"
 
             android:maxLines="1"
             android:padding="10dp"

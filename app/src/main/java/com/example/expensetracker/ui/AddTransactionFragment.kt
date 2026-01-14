@@ -157,7 +157,7 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
             val isIncome = (transactionArg.type == 1)
             setTransactionType(isIncome)
 
-            // Ghi đè lại danh mục cũ (vì hàm setTransactionType lỡ reset về mặc định)
+            // Ghi đè lại danh mục cũ
             binding.tvCategory.text = transactionArg.category
 
         } else {
@@ -173,7 +173,10 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
         // 5. XỬ LÝ NÚT LƯU
         binding.btnSaveTransaction.setOnClickListener {
             // Lấy số tiền và loại bỏ dấu phẩy để parse thành Double
-            val rawAmount = binding.etAmount.text.toString().replace(",", "")
+            val rawAmount = binding.etAmount.text.toString()
+                .replace(",", "")
+                .replace(".", "")
+                .replace(" ", "")
 
             if (rawAmount.isNotEmpty()) {
                 val amount = rawAmount.toDouble()
@@ -188,7 +191,6 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
 
                 // Gửi dữ liệu về (Callback)
                 onSaveClick?.invoke(amount, typeStr, category, note, dateLong)
-
                 dismiss()
             } else {
                 binding.etAmount.error = "Vui lòng nhập số tiền"
