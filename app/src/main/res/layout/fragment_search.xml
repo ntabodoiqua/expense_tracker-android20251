@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".SearchFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#E7F0FF">
+        android:orientation="vertical">
 
         <!-- Header -->
         <LinearLayout
@@ -20,41 +19,57 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tìm kiếm"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Search Bar -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_height="match_parent"
+                android:layout_marginBottom="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <androidx.appcompat.widget.SearchView
-                    android:id="@+id/searchView"
+                <androidx.cardview.widget.CardView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    app:cardBackgroundColor="#40FFFFFF"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@drawable/search"
+                        app:tint="#FFFFFF" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_search"
-                    android:elevation="0dp"
-                    app:iconifiedByDefault="false"
-                    app:queryHint="Tìm theo tên hoặc ghi chú..."
-                    app:searchIcon="@drawable/ic_search"/>
+                    android:text="Tìm kiếm"
+                    android:textColor="#FFFFFF"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
             </LinearLayout>
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_white_with_border"
+                app:iconifiedByDefault="false"
+                app:queryHint="Tìm theo tên hoặc ghi chú..." />
+
+            <!-- Search Bar -->
         </LinearLayout>
 
         <ScrollView
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true"
             android:clickable="true"
+            android:fillViewport="true"
             android:focusable="true"
             android:focusableInTouchMode="true">
 
@@ -65,329 +80,378 @@
                 android:paddingBottom="80dp">
 
                 <!-- Bộ lọc Card -->
-                <com.google.android.material.card.MaterialCardView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#FFFFFF">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingVertical="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:src="@drawable/funnel"
+                            app:tint="#0033CC" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bộ lọc"
+                            android:textColor="#0033CC"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="20dp"
+                        android:background="@drawable/bg_white_with_border"
                         android:orientation="vertical"
                         android:padding="20dp">
 
                         <!-- Header với icon -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginBottom="20dp">
 
-                            <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:src="@drawable/ic_filter"
-                                android:layout_marginEnd="12dp"/>
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Bộ lọc"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="#1e293b"/>
-                        </LinearLayout>
-
-                        <!-- Lọc theo loại giao dịch -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
                             android:text="Loại giao dịch"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#475569"
-                            android:layout_marginBottom="10dp"/>
+                            android:textColor="#525252"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
                         <com.google.android.material.chip.ChipGroup
                             android:id="@+id/chipGroupType"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true">
+                            android:layout_marginBottom="20dp"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipAll"
+                                style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tất cả"
                                 android:checked="true"
-                                android:textSize="13sp"
+                                android:text="Tất cả"
                                 android:textColor="@color/chip_all_text"
-                                app:chipBackgroundColor="@color/chip_all_background"
-                                app:chipStrokeColor="@color/chip_all_stroke"
-                                app:chipStrokeWidth="1dp"
-                                style="@style/Widget.Material3.Chip.Filter"/>
+                                android:textSize="16sp"
+                                app:checkedIcon="@drawable/check"
+                                app:checkedIconTint="#FFFFFF"
+                                app:chipBackgroundColor="@color/chip_all_bg"
+                                app:chipCornerRadius="10dp"
+                                app:chipMinHeight="40dp"
+                                app:chipStrokeColor="#2563eb" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipExpense"
+                                style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Chi tiêu"
-                                android:textSize="13sp"
                                 android:textColor="@color/chip_expense_text"
-                                app:chipBackgroundColor="@color/chip_expense_background"
-                                app:chipStrokeColor="@color/chip_expense_stroke"
-                                app:chipStrokeWidth="1dp"
-                                style="@style/Widget.Material3.Chip.Filter"/>
+                                android:textSize="16sp"
+                                app:checkedIcon="@drawable/check"
+                                app:checkedIconTint="#FFFFFF"
+                                app:chipBackgroundColor="@color/chip_expense_bg"
+                                app:chipCornerRadius="10dp"
+                                app:chipMinHeight="40dp"
+                                app:chipStrokeColor="#dc2626" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipIncome"
+                                style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Thu nhập"
-                                android:textSize="13sp"
                                 android:textColor="@color/chip_income_text"
-                                app:chipBackgroundColor="@color/chip_income_background"
-                                app:chipStrokeColor="@color/chip_income_stroke"
-                                app:chipStrokeWidth="1dp"
-                                style="@style/Widget.Material3.Chip.Filter"/>
+                                android:textSize="16sp"
+                                app:checkedIcon="@drawable/check"
+                                app:checkedIconTint="#FFFFFF"
+                                app:chipBackgroundColor="@color/chip_income_bg"
+                                app:chipCornerRadius="10dp"
+                                app:chipMinHeight="40dp"
+                                app:chipStrokeColor="#16a34a" />
                         </com.google.android.material.chip.ChipGroup>
 
-                        <!-- Lọc theo thời gian -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
                             android:text="Khoảng thời gian"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#475569"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="10dp"/>
+                            android:textColor="#525252"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="16dp">
-
-                            <Button
-                                android:id="@+id/btnFromDate"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Từ ngày"
-                                android:textSize="13sp"
-                                android:textAllCaps="false"
-                                android:layout_marginEnd="8dp"
-                                style="@style/Widget.Material3.Button.OutlinedButton"/>
-
-                            <Button
-                                android:id="@+id/btnToDate"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Đến ngày"
-                                android:textSize="13sp"
-                                android:textAllCaps="false"
-                                style="@style/Widget.Material3.Button.OutlinedButton"/>
-                        </LinearLayout>
-
-                        <!-- Lọc theo danh mục -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Danh mục"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#475569"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="10dp"/>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/categoryInputLayout"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
-                            app:boxStrokeColor="#6366f1"
-                            app:hintTextColor="#6366f1"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
-
-                            <AutoCompleteTextView
-                                android:id="@+id/categoryDropdown"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="none"
-                                android:hint="Chọn danh mục"
-                                android:textSize="14sp"
-                                android:textColor="#1e293b"
-                                android:textColorHint="#94a3b8"
-                                android:padding="14dp"/>
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <!-- Lọc theo số tiền -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Khoảng số tiền"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#475569"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="10dp"/>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="20dp">
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginEnd="8dp"
-                                app:boxStrokeColor="#6366f1"
-                                app:hintTextColor="#6366f1"
-                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etMinAmount"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:hint="Tối thiểu"
-                                    android:inputType="numberDecimal"
-                                    android:imeOptions="actionDone"
-                                    android:textSize="14sp"
-                                    android:textColor="#1e293b"
-                                    android:textColorHint="#94a3b8"/>
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                app:boxStrokeColor="#6366f1"
-                                app:hintTextColor="#6366f1"
-                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etMaxAmount"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:hint="Tối đa"
-                                    android:inputType="numberDecimal"
-                                    android:imeOptions="actionDone"
-                                    android:textSize="14sp"
-                                    android:textColor="#1e293b"
-                                    android:textColorHint="#94a3b8"/>
-                            </com.google.android.material.textfield.TextInputLayout>
-                        </LinearLayout>
-
-                        <!-- Nút áp dụng và xóa bộ lọc -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="20dp"
                             android:orientation="horizontal">
 
-                            <Button
+                            <TextView
+                                android:id="@+id/tvFromDate"
+                                android:layout_width="0dp"
+                                android:layout_height="50dp"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="1"
+
+                                android:background="@drawable/bg_white_with_border"
+                                android:clickable="true"
+                                android:drawablePadding="10dp"
+                                android:focusable="true"
+
+                                android:gravity="center"
+                                android:paddingHorizontal="10dp"
+                                android:text="Từ ngày"
+
+                                android:textColor="#1f2937"
+                                android:textSize="16sp"
+                                app:drawableStartCompat="@drawable/calendar_days"
+                                app:drawableTint="#0033CC" />
+
+                            <TextView
+                                android:id="@+id/tvToDate"
+                                android:layout_width="0dp"
+                                android:layout_height="50dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+
+                                android:background="@drawable/bg_white_with_border"
+                                android:clickable="true"
+                                android:drawablePadding="10dp"
+                                android:focusable="true"
+
+                                android:gravity="center"
+                                android:paddingHorizontal="10dp"
+                                android:text="Đến ngày"
+
+                                android:textColor="#1f2937"
+                                android:textSize="16sp"
+                                app:drawableStartCompat="@drawable/calendar_days"
+                                app:drawableTint="#0033CC" />
+
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:text="Danh mục"
+                            android:textColor="#525252"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvCategoryFilter"
+                            android:layout_width="match_parent"
+                            android:layout_height="50dp"
+
+                            android:layout_marginBottom="20dp"
+                            android:background="@drawable/bg_white_with_border"
+                            android:clickable="true"
+                            android:drawableStart="@drawable/layout_grid"
+
+                            android:drawableEnd="@drawable/chevron_down"
+                            android:drawablePadding="10dp"
+                            android:drawableTint="#0033CC"
+
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+
+                            android:hint="Loại giao dịch"
+                            android:padding="10dp"
+                            android:textColor="#1f2937"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:text="Khoảng giá"
+                            android:textColor="#525252"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="20dp"
+                            android:orientation="horizontal">
+
+                            <EditText
+                                android:id="@+id/etMinAmount"
+                                android:layout_width="0dp"
+                                android:layout_height="50dp"
+
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="1"
+
+                                android:background="@drawable/bg_white_with_border"
+                                android:backgroundTint="@null"
+
+                                android:drawableStart="@drawable/dollar_sign"
+                                android:drawablePadding="10dp"
+                                android:drawableTint="#0033CC"
+                                android:ellipsize="end"
+
+                                android:hint="Tối thiểu"
+                                android:inputType="number|numberDecimal"
+                                android:maxLines="1"
+                                android:padding="10dp"
+                                android:textColor="#1f2937"
+                                android:textSize="16sp" />
+
+                            <EditText
+                                android:id="@+id/etMaxAmount"
+                                android:layout_width="0dp"
+                                android:layout_height="50dp"
+
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+
+                                android:background="@drawable/bg_white_with_border"
+                                android:backgroundTint="@null"
+
+                                android:drawableStart="@drawable/dollar_sign"
+                                android:drawablePadding="10dp"
+                                android:drawableTint="#0033CC"
+                                android:ellipsize="end"
+
+                                android:hint="Tối đa"
+                                android:inputType="number|numberDecimal"
+                                android:maxLines="1"
+                                android:padding="10dp"
+                                android:textColor="#1f2937"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <androidx.appcompat.widget.AppCompatButton
                                 android:id="@+id/btnResetFilter"
                                 android:layout_width="0dp"
-                                android:layout_height="52dp"
+                                android:layout_height="50dp"
+                                android:layout_marginEnd="10dp"
                                 android:layout_weight="1"
-                                android:text="Xóa bộ lọc"
-                                android:textSize="14sp"
+                                android:background="@drawable/bg_gray_no_border"
+                                android:text="Xoá bộ lọc"
                                 android:textAllCaps="false"
-                                android:layout_marginEnd="8dp"
-                                style="@style/Widget.Material3.Button.OutlinedButton"/>
+                                android:textColor="#FF6B00"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
 
-                            <Button
+                            <androidx.appcompat.widget.AppCompatButton
                                 android:id="@+id/btnApplyFilter"
                                 android:layout_width="0dp"
-                                android:layout_height="52dp"
+                                android:layout_height="50dp"
+                                android:layout_marginStart="10dp"
                                 android:layout_weight="1"
+                                android:background="@drawable/bg_gradient_orange"
                                 android:text="Áp dụng"
-                                android:textSize="14sp"
                                 android:textAllCaps="false"
-                                style="@style/Widget.Material3.Button"/>
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
                         </LinearLayout>
+
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
 
                 <!-- Kết quả tìm kiếm -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_list"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kết quả"
-                        android:textColor="#0033CC"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:clipToPadding="false"/>
-
-                <!-- Empty state -->
-                <LinearLayout
-                    android:id="@+id/layoutEmpty"
-                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="40dp"
-                    android:visibility="gone">
+                    android:paddingVertical="20dp">
 
-                    <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:src="@drawable/ic_empty"
-                        android:alpha="0.3"
-                        app:tint="#94a3b8"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:src="@drawable/layout_list"
+                            app:tint="#0033CC" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kết quả tìm kiếm"
+                            android:textColor="#0033CC"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerView"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Không tìm thấy giao dịch"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#64748b"
-                        android:layout_marginTop="20dp"/>
+                        android:layout_marginHorizontal="20dp"
+                        android:clipToPadding="false" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Thử điều chỉnh bộ lọc hoặc tìm kiếm khác"
-                        android:textSize="13sp"
-                        android:textColor="#94a3b8"
+                    <LinearLayout
+                        android:id="@+id/layoutEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="20dp"
                         android:gravity="center"
-                        android:layout_marginTop="8dp"/>
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_marginBottom="20dp"
+                            android:src="@drawable/list_x"
+                            app:tint="#9ca3af" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:text="Không tìm thấy giao dịch"
+                            android:textColor="#9ca3af"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="Thử điều chỉnh bộ lọc hoặc tìm kiếm khác"
+                            android:textColor="#9ca3af"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
                 </LinearLayout>
+
+                <!-- Empty state -->
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

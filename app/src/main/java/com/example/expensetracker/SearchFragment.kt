@@ -2,17 +2,19 @@ package com.example.expensetracker
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
+import android.widget.PopupMenu
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.expensetracker.R
 import com.example.expensetracker.data.Transaction
 import com.example.expensetracker.databinding.FragmentSearchBinding
 import com.example.expensetracker.ui.TransactionAdapter
@@ -28,21 +30,18 @@ class SearchFragment : Fragment() {
     private lateinit var viewModel: TransactionViewModel
     private lateinit var adapter: TransactionAdapter
     private var fullList: List<Transaction> = emptyList()
-    
-    // Bộ lọc
-    private var searchQuery: String = ""
-    private var selectedType: Int = -1 // -1: Tất cả, 0: Chi tiêu, 1: Thu nhập
-    private var selectedCategory: String = ""
+
+    // Biến lưu trạng thái bộ lọc (để lưu trữ tạm thời các giá trị ngày tháng)
     private var fromDate: Long? = null
     private var toDate: Long? = null
-    private var minAmount: Double? = null
-    private var maxAmount: Double? = null
 
+    // Các biến khác sẽ đọc trực tiếp từ UI khi cần lọc
+
+    // Danh sách danh mục
     private val allCategories = listOf(
         "Tất cả",
-        "Ăn uống", "Mua sắm", "Giải trí", "Sức khỏe", "Giáo dục",
-        "Di chuyển", "Hóa đơn", "Quà tặng", "Du lịch", "Khác",
-        "Lương", "Thưởng", "Đầu tư", "Quà tặng nhận", "Kinh doanh", "Freelance", "Khác"
+        "Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Tiền nhà", "Hóa đơn", "Y tế", "Giáo dục",
+        "Lương", "Thưởng", "Lãi tiết kiệm", "Bán hàng", "Quà tặng", "Khác"
     )
 
     override fun onCreateView(
@@ -55,225 +54,244 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-        // Setup hide keyboard on outside touch
+
         setupHideKeyboardOnOutsideTouch()
-        
-        // Setup ViewModel
         viewModel = ViewModelProvider(this)[TransactionViewModel::class.java]
-        
-        // Setup RecyclerView
+
         adapter = TransactionAdapter()
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
-        
-        // Setup category dropdown
-        setupCategoryDropdown()
-        
-        // Observe transactions
+
+        // Setup các thành phần giao diện
+        setupSearchView()
+        setupCategoryFilter()
+        setupTypeFilter()
+        setupDatePickers()
+        setupFilterButtons() // Nút Áp dụng & Xóa
+
+        // Quan sát dữ liệu
         viewModel.allTransactions.observe(viewLifecycleOwner) { list ->
             list?.let {
                 fullList = it
-                applyFilters()
-            }
-        }
-        
-        // Setup listeners
-        setupSearchView()
-        setupTypeFilter()
-        setupDatePickers()
-        setupFilterButtons()
-    }
-
-    private fun setupHideKeyboardOnOutsideTouch() {
-        // Hide keyboard when touching outside on root
-        binding.root.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                hideKeyboard()
-            }
-            false
-        }
-        
-        // Hide keyboard when touching ScrollView
-        binding.scrollView.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                hideKeyboard()
-            }
-            false
-        }
-        
-        // Hide keyboard when clicking on ScrollView
-        binding.scrollView.setOnClickListener {
-            hideKeyboard()
-        }
-        
-        // Also hide keyboard when scrolling
-        binding.root.findViewById<View>(androidx.appcompat.R.id.search_src_text)?.setOnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
-            }
-        }
-        
-        // Hide keyboard when clicking apply or reset filter
-        setupAmountFieldsFocusListener()
-    }
-    
-    private fun setupAmountFieldsFocusListener() {
-        // IME action done for min amount
-        binding.etMinAmount.setOnEditorActionListener { v, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                hideKeyboard()
-                v.clearFocus()
-                true
-            } else false
-        }
-        
-        // IME action done for max amount
-        binding.etMaxAmount.setOnEditorActionListener { v, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                hideKeyboard()
-                v.clearFocus()
-                true
-            } else false
-        }
-        
-        // Focus change listeners
-        binding.etMinAmount.setOnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
-            }
-        }
-        
-        binding.etMaxAmount.setOnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                // Chỉ lọc khi đã có dữ liệu
+                executeFilter(showToast = false)
             }
         }
     }
 
-    private fun setupCategoryDropdown() {
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, allCategories)
-        binding.categoryDropdown.setAdapter(adapter)
-        binding.categoryDropdown.setText("Tất cả", false)
-        
-        binding.categoryDropdown.setOnItemClickListener { _, _, position, _ ->
-            selectedCategory = allCategories[position]
-        }
-    }
-
+    // --- 1. SEARCH VIEW (Lọc ngay khi gõ) ---
     private fun setupSearchView() {
-        binding.searchView.setOnQueryTextListener(object :
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
+                hideKeyboard()
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                searchQuery = newText ?: ""
-                applyFilters()
+                // Gọi hàm lọc tổng hợp ngay lập tức
+                executeFilter(showToast = false)
                 return true
             }
         })
     }
 
-    private fun setupTypeFilter() {
-        binding.chipGroupType.setOnCheckedStateChangeListener { _, checkedIds ->
-            selectedType = when {
-                binding.chipExpense.isChecked -> 0
-                binding.chipIncome.isChecked -> 1
-                else -> -1
+    // --- 2. CATEGORY FILTER (Lọc ngay khi chọn) ---
+    private fun setupCategoryFilter() {
+        binding.tvCategoryFilter.text = "Tất cả danh mục"
+
+        binding.tvCategoryFilter.setOnClickListener { view ->
+            val popup = PopupMenu(requireContext(), view)
+            allCategories.forEach { popup.menu.add(it) }
+
+            popup.setOnMenuItemClickListener { item ->
+                binding.tvCategoryFilter.text = if (item.title == "Tất cả") "Tất cả danh mục" else item.title
+                // Lọc ngay lập tức
+                executeFilter(showToast = true)
+                true
             }
-            applyFilters()
+            popup.show()
         }
     }
 
+    // --- 3. TYPE FILTER (Lọc ngay khi bấm Chip) ---
+    private fun setupTypeFilter() {
+        binding.chipGroupType.setOnCheckedStateChangeListener { _, _ ->
+            // Lọc ngay lập tức
+            executeFilter(showToast = true)
+        }
+    }
+
+    // --- 4. DATE PICKERS (Lọc ngay khi chọn ngày xong) ---
     private fun setupDatePickers() {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        
-        binding.btnFromDate.setOnClickListener {
-            val constraintsBuilder = CalendarConstraints.Builder()
-                .setValidator(DateValidatorPointBackward.now())
-            
+
+        binding.tvFromDate.setOnClickListener {
+            val constraints = CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
             val datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Chọn ngày bắt đầu")
                 .setSelection(fromDate ?: MaterialDatePicker.todayInUtcMilliseconds())
-                .setCalendarConstraints(constraintsBuilder.build())
+                .setCalendarConstraints(constraints)
                 .setTheme(R.style.CustomMaterialDatePicker)
                 .build()
-            
+
             datePicker.addOnPositiveButtonClickListener { selection ->
-                val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                utcCalendar.timeInMillis = selection
-                
-                val localCalendar = Calendar.getInstance()
-                localCalendar.set(
-                    utcCalendar.get(Calendar.YEAR),
-                    utcCalendar.get(Calendar.MONTH),
-                    utcCalendar.get(Calendar.DAY_OF_MONTH)
-                )
-                
-                fromDate = localCalendar.timeInMillis
-                binding.btnFromDate.text = dateFormat.format(localCalendar.time)
+                val calendar = Calendar.getInstance().apply { timeInMillis = selection; set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) }
+                fromDate = calendar.timeInMillis
+                binding.tvFromDate.text = dateFormat.format(Date(fromDate!!))
+
+                // Lọc ngay lập tức
+                executeFilter(showToast = true)
             }
-            
-            datePicker.show(parentFragmentManager, "FROM_DATE_PICKER")
+            datePicker.show(parentFragmentManager, "FROM")
         }
-        
-        binding.btnToDate.setOnClickListener {
-            val constraintsBuilder = CalendarConstraints.Builder()
-                .setValidator(DateValidatorPointBackward.now())
-            
+
+        binding.tvToDate.setOnClickListener {
+            val constraints = CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
             val datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Chọn ngày kết thúc")
                 .setSelection(toDate ?: MaterialDatePicker.todayInUtcMilliseconds())
-                .setCalendarConstraints(constraintsBuilder.build())
+                .setCalendarConstraints(constraints)
                 .setTheme(R.style.CustomMaterialDatePicker)
                 .build()
-            
+
             datePicker.addOnPositiveButtonClickListener { selection ->
-                val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                utcCalendar.timeInMillis = selection
-                
-                val localCalendar = Calendar.getInstance()
-                localCalendar.set(
-                    utcCalendar.get(Calendar.YEAR),
-                    utcCalendar.get(Calendar.MONTH),
-                    utcCalendar.get(Calendar.DAY_OF_MONTH)
-                )
-                
-                toDate = localCalendar.timeInMillis
-                binding.btnToDate.text = dateFormat.format(localCalendar.time)
+                val calendar = Calendar.getInstance().apply { timeInMillis = selection; set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59) }
+                toDate = calendar.timeInMillis
+                binding.tvToDate.text = dateFormat.format(Date(selection))
+
+                // Lọc ngay lập tức
+                executeFilter(showToast = true)
             }
-            
-            datePicker.show(parentFragmentManager, "TO_DATE_PICKER")
+            datePicker.show(parentFragmentManager, "TO")
         }
     }
 
+    // --- 5. BUTTONS (Áp dụng & Xóa) ---
     private fun setupFilterButtons() {
+        // Nút Áp dụng: Chủ yếu dùng để xác nhận khoảng giá (nếu người dùng nhập xong mà chưa làm gì khác)
+        // Hoặc đơn giản là người dùng thích bấm nút để chắc ăn.
         binding.btnApplyFilter.setOnClickListener {
-            // Hide keyboard first
             hideKeyboard()
-            
-            // Lấy giá trị số tiền
-            val minText = binding.etMinAmount.text.toString()
-            val maxText = binding.etMaxAmount.text.toString()
-            
-            minAmount = if (minText.isNotEmpty()) minText.toDoubleOrNull() else null
-            maxAmount = if (maxText.isNotEmpty()) maxText.toDoubleOrNull() else null
-            
-            applyFilters()
+            executeFilter(showToast = true)
         }
-        
+
+        // Nút Xóa bộ lọc: Reset toàn bộ form
         binding.btnResetFilter.setOnClickListener {
-            // Hide keyboard first
             hideKeyboard()
-            resetFilters()
+            resetAllFilters()
+        }
+
+        // Bonus: Lắng nghe nút "Done" trên bàn phím ở ô nhập giá tối đa
+        binding.etMaxAmount.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard()
+                executeFilter(showToast = true)
+                true
+            } else false
         }
     }
-    
+
+    // --- LOGIC: HÀM LỌC TỔNG HỢP (QUAN TRỌNG NHẤT) ---
+    private fun executeFilter(showToast: Boolean) {
+        var filteredList = fullList
+
+        // === BƯỚC 1: ĐỌC DỮ LIỆU TỪ UI NGAY TẠI THỜI ĐIỂM LỌC ===
+
+        // A. Đọc Search Query
+        val query = binding.searchView.query.toString().lowercase()
+
+        // B. Đọc Loại (Type) từ Chip
+        val typeFilter = when {
+            binding.chipExpense.isChecked -> 0
+            binding.chipIncome.isChecked -> 1
+            else -> -1
+        }
+
+        // C. Đọc Danh mục từ TextView
+        val categoryText = binding.tvCategoryFilter.text.toString()
+        val categoryFilter = if (categoryText == "Tất cả danh mục") "Tất cả" else categoryText
+
+        // D. Đọc Giá tiền từ EditText (Parse trực tiếp)
+        val minText = binding.etMinAmount.text.toString().replace(",", "").replace(".", "")
+        val maxText = binding.etMaxAmount.text.toString().replace(",", "").replace(".", "")
+        val minVal = minText.toDoubleOrNull()
+        val maxVal = maxText.toDoubleOrNull()
+
+        // === BƯỚC 2: ÁP DỤNG CÁC ĐIỀU KIỆN ===
+
+        // 1. Tìm kiếm
+        if (query.isNotEmpty()) {
+            filteredList = filteredList.filter {
+                it.title.lowercase().contains(query) || it.note.lowercase().contains(query)
+            }
+        }
+
+        // 2. Loại
+        if (typeFilter != -1) {
+            filteredList = filteredList.filter { it.type == typeFilter }
+        }
+
+        // 3. Danh mục
+        if (categoryFilter != "Tất cả") {
+            filteredList = filteredList.filter { it.category == categoryFilter }
+        }
+
+        // 4. Ngày tháng (Dùng biến đã lưu từ DatePicker)
+        if (fromDate != null) {
+            filteredList = filteredList.filter { it.date >= fromDate!! }
+        }
+        if (toDate != null) {
+            filteredList = filteredList.filter { it.date <= toDate!! }
+        }
+
+        // 5. Giá tiền
+        if (minVal != null) {
+            filteredList = filteredList.filter { it.amount >= minVal }
+        }
+        if (maxVal != null) {
+            filteredList = filteredList.filter { it.amount <= maxVal }
+        }
+
+        // === BƯỚC 3: HIỂN THỊ KẾT QUẢ ===
+
+        // Sắp xếp
+        filteredList = filteredList.sortedByDescending { it.date }
+
+        if (filteredList.isEmpty()) {
+            binding.layoutEmpty.visibility = View.VISIBLE
+            binding.recyclerView.visibility = View.GONE
+        } else {
+            binding.layoutEmpty.visibility = View.GONE
+            binding.recyclerView.visibility = View.VISIBLE
+            adapter.setData(filteredList)
+        }
+
+        if (showToast) {
+            Toast.makeText(context, "Tìm thấy ${filteredList.size} giao dịch", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun resetAllFilters() {
+        // Reset UI về mặc định
+        binding.searchView.setQuery("", false)
+        binding.searchView.clearFocus()
+
+        binding.chipAll.isChecked = true
+
+        binding.tvCategoryFilter.text = "Tất cả danh mục"
+
+        binding.tvFromDate.text = "Từ ngày"
+        binding.tvToDate.text = "Đến ngày"
+        fromDate = null
+        toDate = null
+
+        binding.etMinAmount.text?.clear()
+        binding.etMaxAmount.text?.clear()
+
+        // Gọi lọc lại (sẽ hiển thị full list)
+        executeFilter(showToast = true)
+    }
+
     private fun hideKeyboard() {
         val currentFocus = activity?.currentFocus
         if (currentFocus != null) {
@@ -283,79 +301,10 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun resetFilters() {
-        // Reset tất cả bộ lọc
-        searchQuery = ""
-        selectedType = -1
-        selectedCategory = "Tất cả"
-        fromDate = null
-        toDate = null
-        minAmount = null
-        maxAmount = null
-        
-        // Reset UI
-        binding.searchView.setQuery("", false)
-        binding.chipAll.isChecked = true
-        binding.categoryDropdown.setText("Tất cả", false)
-        binding.btnFromDate.text = "Từ ngày"
-        binding.btnToDate.text = "Đến ngày"
-        binding.etMinAmount.text?.clear()
-        binding.etMaxAmount.text?.clear()
-        
-        // Áp dụng lại
-        applyFilters()
-    }
-
-    private fun applyFilters() {
-        var filteredList = fullList
-        
-        // Lọc theo từ khóa tìm kiếm
-        if (searchQuery.isNotEmpty()) {
-            filteredList = filteredList.filter {
-                it.title.lowercase().contains(searchQuery.lowercase()) ||
-                it.note.lowercase().contains(searchQuery.lowercase())
-            }
-        }
-        
-        // Lọc theo loại giao dịch
-        if (selectedType != -1) {
-            filteredList = filteredList.filter { it.type == selectedType }
-        }
-        
-        // Lọc theo danh mục
-        if (selectedCategory.isNotEmpty() && selectedCategory != "Tất cả") {
-            filteredList = filteredList.filter { it.category == selectedCategory }
-        }
-        
-        // Lọc theo khoảng thời gian
-        if (fromDate != null) {
-            filteredList = filteredList.filter { it.date >= fromDate!! }
-        }
-        if (toDate != null) {
-            // Thêm 1 ngày để bao gồm cả ngày kết thúc
-            val endOfDay = toDate!! + (24 * 60 * 60 * 1000)
-            filteredList = filteredList.filter { it.date < endOfDay }
-        }
-        
-        // Lọc theo số tiền
-        if (minAmount != null) {
-            filteredList = filteredList.filter { it.amount >= minAmount!! }
-        }
-        if (maxAmount != null) {
-            filteredList = filteredList.filter { it.amount <= maxAmount!! }
-        }
-        
-        // Sắp xếp theo ngày mới nhất
-        filteredList = filteredList.sortedByDescending { it.date }
-        
-        // Hiển thị kết quả
-        if (filteredList.isEmpty()) {
-            binding.layoutEmpty.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
-        } else {
-            binding.layoutEmpty.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
-            adapter.setData(filteredList)
+    private fun setupHideKeyboardOnOutsideTouch() {
+        binding.root.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) hideKeyboard()
+            false
         }
     }
 }

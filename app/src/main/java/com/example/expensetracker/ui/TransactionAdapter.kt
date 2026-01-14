@@ -32,16 +32,9 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         holder.binding.tvTitle.text = currentItem.title
 
         // 2. Format Ngày giờ
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // Bỏ giờ phút cho gọn nếu muốn
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         holder.binding.tvDate.text = sdf.format(Date(currentItem.date))
-        
-        // Hiển thị ghi chú (nếu có)
-        if (currentItem.note.isNotEmpty()) {
-            holder.binding.tvNote.text = currentItem.note
-            holder.binding.tvNote.visibility = android.view.View.VISIBLE
-        } else {
-            holder.binding.tvNote.visibility = android.view.View.GONE
-        }
+
 
         // 3. Format Tiền tệ
         val formatter = DecimalFormat("#,### ₫")
@@ -66,46 +59,71 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         when (currentItem.category) {
             "Ăn uống" -> {
                 holder.binding.imgIcon.setImageResource(R.drawable.utensils)
-                // Nền Cam Nhạt
-                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fed7aa"))
-                // Icon Cam Đậm
-                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ea580c"))
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#ffedd5"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#f97316"))
             }
             "Đi lại" -> {
                 holder.binding.imgIcon.setImageResource(R.drawable.car)
-                // Nền Xanh Dương Nhạt
-                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#bae6fd"))
-                // Icon Xanh Dương Đậm
-                holder.binding.imgIcon.setColorFilter(Color.parseColor("#2563eb"))
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#dbeafe"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#3b82f6"))
             }
             "Mua sắm" -> {
                 holder.binding.imgIcon.setImageResource(R.drawable.shopping_bag)
-                // Nền Tím Nhạt
-                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e9d5ff"))
-                // Icon Tím Đậm
-                holder.binding.imgIcon.setColorFilter(Color.parseColor("#9333ea"))
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fce7f3"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ec4899"))
             }
             "Giải trí" -> {
-                // Bạn có thể tìm thêm icon ic_gamepad hoặc ic_film
-                holder.binding.imgIcon.setImageResource(R.drawable.shopping_bag)
-                // Nền Vàng Nhạt
-                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fef08a"))
-                // Icon Vàng Đậm
-                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ca8a04"))
+                holder.binding.imgIcon.setImageResource(R.drawable.monitor_play)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#f3e8ff"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#a855f7"))
             }
-            "Lương", "Thưởng" -> {
-                // Ưu tiên dùng icon tiền
-                if (currentItem.category == "Lương") holder.binding.imgIcon.setImageResource(R.drawable.dollar_sign)
-                else holder.binding.imgIcon.setImageResource(R.drawable.hand_coins)
-
-                // Nền Xanh Lá Nhạt
-                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#bbf7d0"))
-                // Icon Xanh Lá Đậm
-                holder.binding.imgIcon.setColorFilter(Color.parseColor("#16a34a"))
+            "Tiền nhà" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.house)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e0e7ff"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#6366f1"))
+            }
+            "Hóa đơn" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.receipt_text)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#cffafe"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#06b6d4"))
+            }
+            "Y tế" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.briefcase_medical)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fee2e2"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#ef4444"))
+            }
+            "Giáo dục" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.book_open)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#f5f5f4"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#78716c"))
+            }
+            "Lương" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.dollar_sign)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#dcfce7"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#22c55e"))
+            }
+            "Thưởng" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.hand_coins)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fef9c3"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#eab308"))
+            }
+            "Lãi tiết kiệm" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.piggy_bank)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#ecfccb"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#84cc16"))
+            }
+            "Bán hàng" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.store)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e0f2fe"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#0ea5e9"))
+            }
+            "Quà tặng" -> {
+                holder.binding.imgIcon.setImageResource(R.drawable.gift)
+                holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#fef3c7"))
+                holder.binding.imgIcon.setColorFilter(Color.parseColor("#f59e0b"))
             }
             else -> {
-                // Mặc định: Màu xám
-                holder.binding.imgIcon.setImageResource(R.drawable.circle)
+                holder.binding.imgIcon.setImageResource(R.drawable.square_dashed)
                 holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#e5e7eb"))
                 holder.binding.imgIcon.setColorFilter(Color.parseColor("#4b5563"))
             }

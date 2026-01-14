@@ -77,10 +77,11 @@ class OnboardingActivity : AppCompatActivity() {
 
         // Validate tên nếu không phải skip mode
         if (!skipMode && name.isEmpty()) {
-            binding.layoutName.error = "Vui lòng nhập tên của bạn"
+            binding.etName.error = "Vui lòng nhập tên của bạn"
+            binding.etName.requestFocus()
             return
         } else {
-            binding.layoutName.error = null
+            binding.etName.error = null
         }
 
         // Lưu thông tin

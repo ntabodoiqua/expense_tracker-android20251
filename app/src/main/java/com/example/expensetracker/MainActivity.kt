@@ -15,7 +15,6 @@ class  MainActivity : AppCompatActivity() {
 
         loadFragment(HomeFragment())
 
-        // 2. Bắt sự kiện click vào menu dưới đáy
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {

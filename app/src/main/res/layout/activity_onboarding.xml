@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient"
+    android:background="@drawable/bg_gradient_blue_no_corner"
     android:fillViewport="true"
     android:isScrollContainer="true"
     android:fitsSystemWindows="true">
@@ -13,30 +13,31 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="40dp">
 
         <!-- App Logo / Icon -->
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="40dp"
-            android:src="@drawable/ic_wallet"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/wallet_cards"
             app:tint="@android:color/white" />
 
         <!-- Welcome Text -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginBottom="5dp"
             android:text="Chào mừng bạn đến với"
             android:textColor="#E0E7FF"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Expense Tracker"
+            android:layout_marginBottom="10dp"
+            android:text="SmartWallet"
             android:textColor="@android:color/white"
             android:textSize="32sp"
             android:textStyle="bold" />
@@ -44,31 +45,31 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginBottom="40dp"
             android:gravity="center"
             android:text="Quản lý chi tiêu thông minh\nKiểm soát tài chính dễ dàng"
             android:textColor="#C7D2FE"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
 
         <!-- Profile Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp">
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:layout_marginBottom="20dp"
                     android:text="Thiết lập hồ sơ của bạn"
                     android:textColor="#1F2937"
                     android:textSize="20sp"
@@ -78,7 +79,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="20dp"
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -87,11 +88,12 @@
                         android:layout_height="wrap_content">
 
                         <androidx.cardview.widget.CardView
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_margin="10dp"
                             app:cardBackgroundColor="#F1F5F9"
                             app:cardCornerRadius="55dp"
-                            app:cardElevation="4dp">
+                            app:cardElevation="5dp">
 
                             <ImageView
                                 android:id="@+id/imgAvatar"
@@ -101,15 +103,25 @@
                                 android:src="@drawable/avatar" />
                         </androidx.cardview.widget.CardView>
 
-                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        <androidx.cardview.widget.CardView
                             android:id="@+id/fabChangeAvatar"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
                             android:layout_gravity="bottom|end"
-                            android:src="@drawable/camera"
-                            app:backgroundTint="#3B82F6"
-                            app:fabSize="mini"
-                            app:tint="@android:color/white" />
+
+                            app:cardBackgroundColor="#0865FF"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="10dp"
+
+                            app:contentPadding="10dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/camera"
+                                app:tint="#FFFFFF" />
+
+                        </androidx.cardview.widget.CardView>
                     </FrameLayout>
 
                     <TextView
@@ -118,66 +130,56 @@
                         android:layout_marginTop="8dp"
                         android:text="Nhấn để đổi ảnh đại diện"
                         android:textColor="#94A3B8"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <!-- Name Input -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutName"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                <EditText
+                    android:id="@+id/etName"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="@drawable/bg_white_with_border"
+                    android:backgroundTint="@null"
+                    android:drawableStart="@drawable/user"
+                    android:drawablePadding="10dp"
+                    android:drawableTint="#0033CC"
+                    android:ellipsize="end"
                     android:hint="Tên của bạn"
-                    android:textColorHint="#64748B"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxStrokeColor="@color/text_input_stroke_color"
-                    app:hintTextColor="#475569"
-                    app:startIconDrawable="@drawable/user"
-                    app:startIconTint="#64748B">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textPersonName"
-                        android:maxLength="30"
-                        android:padding="16dp"
-                        android:textColor="#1F2937"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    android:inputType="textCapSentences"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="#1f2937"
+                    android:textSize="18dp" />
 
                 <!-- Start Button -->
-                <com.google.android.material.button.MaterialButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnStart"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="32dp"
-                    android:backgroundTint="#3B82F6"
-                    android:text="🚀 Bắt đầu ngay"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="@drawable/bg_gradient_orange"
+                    android:padding="10dp"
+                    android:text="Bắt đầu ngay"
+                    android:textAlignment="center"
                     android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="12dp" />
-
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+                <!-- Skip Button -->
+                <TextView
+                    android:id="@+id/tvSkip"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_gray_no_border"
+                    android:padding="10dp"
+                    android:text="Bỏ qua, thiết lập sau"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textColor="#4b5563"
+                    android:textSize="18sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Skip text -->
-        <TextView
-            android:id="@+id/tvSkip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="24dp"
-            android:padding="8dp"
-            android:text="Bỏ qua, thiết lập sau"
-            android:textColor="#E0E7FF"
-            android:textSize="14sp" />
 
     </LinearLayout>
 </ScrollView>

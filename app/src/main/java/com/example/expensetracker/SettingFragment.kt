@@ -74,58 +74,72 @@ class SettingFragment : Fragment() {
 
     private fun loadLimitSettings() {
         // Load trạng thái switch
-        binding.switchDailyLimit.isChecked = userPreferences.isDailyLimitEnabled
-        binding.switchMonthlyLimit.isChecked = userPreferences.isMonthlyLimitEnabled
+        val isDailyEnabled = userPreferences.isDailyLimitEnabled
+        val isMonthlyEnabled = userPreferences.isMonthlyLimitEnabled
 
-        // Hiện/ẩn input fields
-        binding.layoutDailyLimit.visibility = if (userPreferences.isDailyLimitEnabled) View.VISIBLE else View.GONE
-        binding.layoutMonthlyLimit.visibility = if (userPreferences.isMonthlyLimitEnabled) View.VISIBLE else View.GONE
+        binding.switchDailyLimit.isChecked = isDailyEnabled
+        binding.switchMonthlyLimit.isChecked = isMonthlyEnabled
 
-        // Load giá trị giới hạn
+        // Hiện/ẩn input fields dựa trên trạng thái (SỬA LẠI THEO XML)
+        binding.etDailyLimit.visibility = if (isDailyEnabled) View.VISIBLE else View.GONE
+        binding.etMonthlyLimit.visibility = if (isMonthlyEnabled) View.VISIBLE else View.GONE
+
+        // Load giá trị giới hạn (Chuyển về chuỗi số nguyên cho đẹp nếu không có lẻ)
         if (userPreferences.dailyLimit > 0) {
-            binding.etDailyLimit.setText(userPreferences.dailyLimit.toLong().toString())
+            binding.etDailyLimit.setText(formatAmount(userPreferences.dailyLimit))
         }
         if (userPreferences.monthlyLimit > 0) {
-            binding.etMonthlyLimit.setText(userPreferences.monthlyLimit.toLong().toString())
+            binding.etMonthlyLimit.setText(formatAmount(userPreferences.monthlyLimit))
+        }
+    }
+
+    private fun formatAmount(amount: Double): String {
+        return if (amount % 1.0 == 0.0) {
+            amount.toLong().toString()
+        } else {
+            amount.toString()
         }
     }
 
     private fun setupListeners() {
-        // Switch Daily Limit
+        // 1. Switch Daily Limit
         binding.switchDailyLimit.setOnCheckedChangeListener { _, isChecked ->
-            binding.layoutDailyLimit.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.etDailyLimit.visibility = if (isChecked) View.VISIBLE else View.GONE
             userPreferences.isDailyLimitEnabled = isChecked
+
+            // Nếu tắt thì xóa dữ liệu cũ đi cho sạch
             if (!isChecked) {
                 userPreferences.dailyLimit = 0.0
                 binding.etDailyLimit.text?.clear()
             }
         }
 
-        // Switch Monthly Limit
+        // 2. Switch Monthly Limit
         binding.switchMonthlyLimit.setOnCheckedChangeListener { _, isChecked ->
-            binding.layoutMonthlyLimit.visibility = if (isChecked) View.VISIBLE else View.GONE
+            binding.etMonthlyLimit.visibility = if (isChecked) View.VISIBLE else View.GONE
             userPreferences.isMonthlyLimitEnabled = isChecked
+
             if (!isChecked) {
                 userPreferences.monthlyLimit = 0.0
                 binding.etMonthlyLimit.text?.clear()
             }
         }
 
-        // Save Limits Button
+        // 3. Save Limits Button
         binding.btnSaveLimits.setOnClickListener {
             saveLimits()
         }
 
-        // Reset Data Button
+        // 4. Reset Data Button
         binding.btnResetData.setOnClickListener {
             showResetConfirmDialog()
         }
 
-        // Edit Profile (click vào card profile)
-        binding.cardProfile.setOnClickListener {
-            // TODO: Mở màn hình chỉnh sửa profile
+        // 5. Click vào phần Profile để chỉnh sửa
+        binding.btnEditProfile.setOnClickListener {
             Toast.makeText(context, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     private fun saveLimits() {
@@ -135,68 +149,70 @@ class SettingFragment : Fragment() {
         if (binding.switchDailyLimit.isChecked) {
             val dailyLimitStr = binding.etDailyLimit.text.toString().trim()
             if (dailyLimitStr.isEmpty()) {
-                binding.layoutDailyLimit.error = "Vui lòng nhập số tiền"
+                binding.etDailyLimit.error = "Vui lòng nhập số tiền"
+                binding.etDailyLimit.requestFocus()
                 isValid = false
             } else {
                 val dailyLimit = dailyLimitStr.toDoubleOrNull()
                 if (dailyLimit == null || dailyLimit <= 0) {
-                    binding.layoutDailyLimit.error = "Số tiền không hợp lệ"
+                    binding.etDailyLimit.error = "Số tiền không hợp lệ"
                     isValid = false
                 } else {
-                    binding.layoutDailyLimit.error = null
+                    binding.etDailyLimit.error = null
                     userPreferences.dailyLimit = dailyLimit
                 }
             }
         }
 
-        // Validate monthly limit
-        if (binding.switchMonthlyLimit.isChecked) {
+        // Validate monthly limit (Chỉ check tiếp nếu cái trên đúng hoặc switch tắt)
+        if (isValid && binding.switchMonthlyLimit.isChecked) {
             val monthlyLimitStr = binding.etMonthlyLimit.text.toString().trim()
             if (monthlyLimitStr.isEmpty()) {
-                binding.layoutMonthlyLimit.error = "Vui lòng nhập số tiền"
+                binding.etMonthlyLimit.error = "Vui lòng nhập số tiền"
+                binding.etMonthlyLimit.requestFocus()
                 isValid = false
             } else {
                 val monthlyLimit = monthlyLimitStr.toDoubleOrNull()
                 if (monthlyLimit == null || monthlyLimit <= 0) {
-                    binding.layoutMonthlyLimit.error = "Số tiền không hợp lệ"
+                    binding.etMonthlyLimit.error = "Số tiền không hợp lệ"
                     isValid = false
                 } else {
-                    binding.layoutMonthlyLimit.error = null
+                    binding.etMonthlyLimit.error = null
                     userPreferences.monthlyLimit = monthlyLimit
                 }
             }
         }
 
         if (isValid) {
-            // Ẩn bàn phím
             hideKeyboard()
-            
-            // Clear focus khỏi các EditText
             binding.etDailyLimit.clearFocus()
             binding.etMonthlyLimit.clearFocus()
-            
-            Toast.makeText(context, "✅ Đã lưu giới hạn chi tiêu!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Đã lưu giới hạn!", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun hideKeyboard() {
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+        val currentFocus = activity?.currentFocus
+        if (currentFocus != null) {
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+        }
     }
 
     private fun showResetConfirmDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("⚠️ Xác nhận xóa dữ liệu")
-            .setMessage("Bạn có chắc chắn muốn xóa tất cả dữ liệu? Hành động này không thể hoàn tác!")
+            .setMessage("Bạn có chắc chắn muốn xóa tất cả dữ liệu không? Hành động này không thể hoàn tác!")
             .setPositiveButton("Xóa") { _, _ ->
-                // Xóa tất cả giao dịch trong database
+                // 1. Xóa tất cả giao dịch trong database Room
                 viewModel.deleteAllTransactions()
-                
-                // Xóa preferences
+
+                // 2. Xóa preferences (thông tin user, limit...)
                 userPreferences.clearAll()
+
                 Toast.makeText(context, "Đã xóa tất cả dữ liệu!", Toast.LENGTH_SHORT).show()
-                
-                // Quay về màn hình onboarding
+
+                // 3. Reset app về màn hình chào mừng
                 val intent = Intent(requireContext(), OnboardingActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)

@@ -1,68 +1,45 @@
 package com.example.expensetracker.ui
 
-import android.content.Context
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
+import android.widget.PopupMenu
+import android.widget.Toast
 import com.example.expensetracker.R
 import com.example.expensetracker.data.Transaction
 import com.example.expensetracker.databinding.ActivityAddTransactionBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointBackward
-import com.google.android.material.datepicker.MaterialDatePicker
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.TimeZone
 
 class AddTransactionFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: ActivityAddTransactionBinding
-    private val calendar = Calendar.getInstance()
-    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    private val amountFormatter = DecimalFormat("#,###")
-    private var isFormattingAmount = false
 
-    // Danh mục theo loại giao dịch
-    private val expenseCategories = listOf(
-        "Ăn uống",
-        "Đi lại", 
-        "Mua sắm",
-        "Giải trí",
-        "Học tập",
-        "Y tế",
-        "Nhà ở",
-        "Điện nước",
-        "Internet",
-        "Khác"
-    )
-    
-    private val incomeCategories = listOf(
-        "Lương",
-        "Thưởng",
-        "Đầu tư",
-        "Làm thêm",
-        "Kinh doanh",
-        "Quà tặng",
-        "Khác"
-    )
+    // Format tiền tệ và ngày tháng
+    private val decimalFormat = DecimalFormat("#,###")
+    private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private var selectedDateCalendar = Calendar.getInstance()
 
-    // Callback để gửi dữ liệu về HomeFragment sau khi lưu
+    // Biến trạng thái quan trọng: Xác định đang là Thu hay Chi
+    private var isIncomeState = false
+
+    // Callback gửi dữ liệu về HomeFragment (Amount, Type, Category, Note, Date)
     var onSaveClick: ((Double, String, String, String, Long) -> Unit)? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Đảm bảo tên class Binding khớp với tên file layout XML của bạn
+        // Nếu file xml tên là layout_add_transaction.xml thì đổi thành LayoutAddTransactionBinding
         binding = ActivityAddTransactionBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -70,226 +47,157 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Setup ẩn bàn phím khi touch ra ngoài
-        setupHideKeyboardOnOutsideTouch()
+        // 1. CẤU HÌNH DỮ LIỆU & GIAO DIỆN BAN ĐẦU
+        val expenseCategories = listOf("Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Tiền nhà", "Hóa đơn", "Y tế", "Giáo dục", "Khác")
+        val incomeCategories = listOf("Lương", "Thưởng", "Lãi tiết kiệm", "Bán hàng", "Quà tặng", "Khác")
 
-        // 2. Setup format số tiền với dấu phân cách
-        setupAmountFormatting()
+        // Cấu hình bàn phím số cho ô nhập tiền (ghi đè XML để trải nghiệm tốt hơn)
+        binding.etAmount.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
 
-        // 3. Set ngày mặc định là hôm nay
-        binding.etDate.setText(dateFormat.format(calendar.time))
+        // --- HÀM LOGIC: Đổi loại giao dịch (Chi tiêu <-> Thu nhập) ---
+        fun setTransactionType(isIncome: Boolean) {
+            isIncomeState = isIncome
 
-        // 4. Xử lý logic chọn chip (chỉ cho phép 1 chip được chọn)
-        setupChipSelection()
+            // Cập nhật giao diện Chip
+            // Lưu ý: Vì dùng LinearLayout, ta set trạng thái checked thủ công
+            binding.chipIncome.isChecked = isIncome
+            binding.chipExpense.isChecked = !isIncome
 
-        // 5. Xử lý dữ liệu truyền vào (nếu có - trường hợp sửa)
+            // Reset danh mục về mục đầu tiên của loại tương ứng
+            val currentList = if (isIncome) incomeCategories else expenseCategories
+            binding.tvCategory.text = currentList[0]
+        }
+
+        // --- HÀM LOGIC: Hiện Menu chọn danh mục ---
+        fun showCategoryMenu(view: View) {
+            val popup = PopupMenu(requireContext(), view)
+            // Lấy list dựa trên biến trạng thái isIncomeState
+            val list = if (isIncomeState) incomeCategories else expenseCategories
+
+            for (item in list) {
+                popup.menu.add(item)
+            }
+
+            popup.setOnMenuItemClickListener { item ->
+                binding.tvCategory.text = item.title
+                true
+            }
+            popup.show()
+        }
+
+        // 2. XỬ LÝ SỰ KIỆN CLICK (LISTENER)
+
+        // Click chọn loại (Chip)
+        binding.chipExpense.setOnClickListener { setTransactionType(false) }
+        binding.chipIncome.setOnClickListener { setTransactionType(true) }
+
+        // Click chọn Danh mục -> Hiện Menu
+        binding.tvCategory.setOnClickListener { showCategoryMenu(it) }
+
+        // Click chọn Ngày -> Hiện Lịch
+        binding.tvDate.setOnClickListener {
+            val year = selectedDateCalendar.get(Calendar.YEAR)
+            val month = selectedDateCalendar.get(Calendar.MONTH)
+            val day = selectedDateCalendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePickerDialog = DatePickerDialog(requireContext(), { _, y, m, d ->
+                selectedDateCalendar.set(y, m, d)
+                binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
+            }, year, month, day)
+
+            datePickerDialog.show()
+        }
+
+        // Click Hủy -> Đóng
+        binding.btnCancelTransaction.setOnClickListener { dismiss() }
+
+        // 3. XỬ LÝ FORMAT SỐ TIỀN (Thêm dấu phẩy khi nhập)
+        binding.etAmount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                binding.etAmount.removeTextChangedListener(this)
+
+                try {
+                    var originalString = s.toString()
+                    if (originalString.contains(",")) {
+                        originalString = originalString.replace(",", "")
+                    }
+                    val longval: Long = originalString.toLong()
+                    val formattedString = decimalFormat.format(longval)
+
+                    binding.etAmount.setText(formattedString)
+                    binding.etAmount.setSelection(binding.etAmount.text.length)
+                } catch (nfe: NumberFormatException) {
+                    // Do nothing
+                }
+
+                binding.etAmount.addTextChangedListener(this)
+            }
+        })
+
+        // 4. KIỂM TRA: CHẾ ĐỘ SỬA (UPDATE) HAY THÊM MỚI (ADD)?
         val transactionArg = arguments?.getSerializable("transaction_data") as? Transaction
 
         if (transactionArg != null) {
-            // --- TRƯỜNG HỢP: SỬA (UPDATE) ---
-            binding.tvTitle.text = "✏️ Chỉnh sửa giao dịch"
-            binding.btnSaveTransaction.text = "💾 Cập nhật"
+            // --- MODE: SỬA ---
+            binding.tvTitle.text = "Chỉnh sửa giao dịch"
+            binding.btnSaveTransaction.text = "Cập nhật"
 
-            // Điền dữ liệu cũ vào ô
-            binding.etAmount.setText(transactionArg.amount.toLong().toString())
+            // Điền dữ liệu cũ
+            // Format số tiền có dấu phẩy
+            binding.etAmount.setText(decimalFormat.format(transactionArg.amount))
             binding.etNote.setText(transactionArg.note)
-            binding.autoCompleteCategory.setText(transactionArg.category, false)
 
-            // Set ngày từ dữ liệu cũ
-            binding.etDate.setText(dateFormat.format(transactionArg.date))
+            // Set ngày cũ
+            selectedDateCalendar.timeInMillis = transactionArg.date
+            binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
 
-            if (transactionArg.type == 1) {
-                binding.chipIncome.isChecked = true
-                binding.chipExpense.isChecked = false
-                updateCategoryDropdown(true)
-            } else {
-                binding.chipExpense.isChecked = true
-                binding.chipIncome.isChecked = false
-                updateCategoryDropdown(false)
-            }
+            // Set loại và danh mục
+            val isIncome = (transactionArg.type == 1)
+            setTransactionType(isIncome)
+
+            // Ghi đè lại danh mục cũ (vì hàm setTransactionType lỡ reset về mặc định)
+            binding.tvCategory.text = transactionArg.category
+
         } else {
-            // --- TRƯỜNG HỢP: THÊM MỚI (ADD) ---
-            binding.tvTitle.text = "➕ Thêm giao dịch mới"
-            binding.btnSaveTransaction.text = "💾 Lưu"
+            // --- MODE: THÊM MỚI ---
+            binding.tvTitle.text = "Thêm giao dịch mới"
+            binding.btnSaveTransaction.text = "Lưu"
+
+            // Mặc định: Chi tiêu, Ngày hôm nay
+            setTransactionType(false)
+            binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
         }
 
-        // =========================================================
-        // 4. XỬ LÝ SỰ KIỆN NÚT BẤM
-        // =========================================================
-
-        // Nút HỦY -> Đóng luôn
-        binding.btnCancel.setOnClickListener {
-            dismiss()
-        }
-
-        // Nút LƯU / CẬP NHẬT
+        // 5. XỬ LÝ NÚT LƯU
         binding.btnSaveTransaction.setOnClickListener {
-            val amountStr = binding.etAmount.text.toString().trim()
-            val category = binding.autoCompleteCategory.text.toString().trim()
+            // Lấy số tiền và loại bỏ dấu phẩy để parse thành Double
+            val rawAmount = binding.etAmount.text.toString().replace(",", "")
 
-            // Validate
-            var isValid = true
+            if (rawAmount.isNotEmpty()) {
+                val amount = rawAmount.toDouble()
+                val note = binding.etNote.text.toString()
+                val category = binding.tvCategory.text.toString()
 
-            if (amountStr.isEmpty()) {
-                binding.layoutAmount.error = "Vui lòng nhập số tiền"
-                isValid = false
-            } else {
-                // Xóa dấu phân cách trước khi parse
-                val cleanAmount = amountStr.replace(".", "").replace(",", "")
-                val amount = cleanAmount.toDoubleOrNull()
-                if (amount == null || amount <= 0) {
-                    binding.layoutAmount.error = "Số tiền không hợp lệ"
-                    isValid = false
-                } else {
-                    binding.layoutAmount.error = null
-                }
-            }
+                // Quyết định loại dựa trên biến trạng thái
+                val typeStr = if (isIncomeState) "Thu nhập" else "Chi tiêu"
 
-            if (category.isEmpty()) {
-                binding.layoutCategory.error = "Vui lòng chọn danh mục"
-                isValid = false
-            } else {
-                binding.layoutCategory.error = null
-            }
+                // Lấy thời gian từ biến Calendar đã chọn
+                val dateLong = selectedDateCalendar.timeInMillis
 
-            if (isValid) {
-                // Xóa dấu phân cách trước khi parse
-                val cleanAmount = amountStr.replace(".", "").replace(",", "")
-                val amount = cleanAmount.toDouble()
-                val note = binding.etNote.text.toString().trim()
-                val type = if (binding.chipIncome.isChecked) "Thu nhập" else "Chi tiêu"
+                // Gửi dữ liệu về (Callback)
+                onSaveClick?.invoke(amount, typeStr, category, note, dateLong)
 
-                // Gửi dữ liệu về HomeFragment (bao gồm timestamp của ngày đã chọn)
-                onSaveClick?.invoke(amount, type, category, note, calendar.timeInMillis)
                 dismiss()
+            } else {
+                binding.etAmount.error = "Vui lòng nhập số tiền"
+                binding.etAmount.requestFocus()
             }
         }
-
-        // 5. Xử lý chọn ngày
-        binding.etDate.setOnClickListener {
-            showDatePicker()
-        }
-
-        // Click vào icon cũng mở DatePicker
-        binding.layoutDate.setEndIconOnClickListener {
-            showDatePicker()
-        }
     }
 
-    private fun showDatePicker() {
-        // Tạo constraint để không cho chọn ngày tương lai
-        val constraintsBuilder = CalendarConstraints.Builder()
-            .setValidator(DateValidatorPointBackward.now())
-
-        // Tạo Material DatePicker
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Chọn ngày giao dịch")
-            .setSelection(calendar.timeInMillis)
-            .setCalendarConstraints(constraintsBuilder.build())
-            .setTheme(R.style.CustomMaterialDatePicker)
-            .build()
-
-        // Xử lý khi chọn ngày
-        datePicker.addOnPositiveButtonClickListener { selection ->
-            // selection là UTC timestamp, cần convert về local
-            val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            utcCalendar.timeInMillis = selection
-            
-            calendar.set(
-                utcCalendar.get(Calendar.YEAR),
-                utcCalendar.get(Calendar.MONTH),
-                utcCalendar.get(Calendar.DAY_OF_MONTH)
-            )
-            binding.etDate.setText(dateFormat.format(calendar.time))
-        }
-
-        datePicker.show(parentFragmentManager, "DATE_PICKER")
-    }
-
-    // Xử lý logic chọn chip Thu nhập / Chi tiêu
-    private fun setupChipSelection() {
-        // Mặc định chọn Chi tiêu
-        binding.chipExpense.isChecked = true
-        updateCategoryDropdown(false)
-        
-        binding.chipExpense.setOnClickListener {
-            binding.chipExpense.isChecked = true
-            binding.chipIncome.isChecked = false
-            updateCategoryDropdown(false) // Chi tiêu
-        }
-
-        binding.chipIncome.setOnClickListener {
-            binding.chipIncome.isChecked = true
-            binding.chipExpense.isChecked = false
-            updateCategoryDropdown(true) // Thu nhập
-        }
-    }
-    
-    // Cập nhật danh sách danh mục theo loại giao dịch
-    private fun updateCategoryDropdown(isIncome: Boolean) {
-        val categories = if (isIncome) incomeCategories else expenseCategories
-        val adapter = ArrayAdapter(requireContext(), R.layout.item_dropdown, categories)
-        binding.autoCompleteCategory.setAdapter(adapter)
-        
-        // Clear selection cũ nếu không hợp lệ với loại mới
-        val currentCategory = binding.autoCompleteCategory.text.toString()
-        if (currentCategory.isNotEmpty() && !categories.contains(currentCategory)) {
-            binding.autoCompleteCategory.setText("", false)
-        }
-    }
-
-    // Ẩn bàn phím khi touch ra ngoài các input
-    private fun setupHideKeyboardOnOutsideTouch() {
-        binding.root.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                val currentFocus = dialog?.currentFocus
-                if (currentFocus != null) {
-                    val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    inputMethodManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
-                    currentFocus.clearFocus()
-                }
-            }
-            false
-        }
-    }
-
-    // Format số tiền với dấu phân cách hàng nghìn
-    private fun setupAmountFormatting() {
-        binding.etAmount.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {
-                if (isFormattingAmount) return
-
-                isFormattingAmount = true
-                
-                val originalString = s.toString()
-                
-                // Xóa tất cả dấu phân cách cũ
-                val cleanString = originalString.replace(".", "").replace(",", "")
-                
-                if (cleanString.isNotEmpty()) {
-                    try {
-                        val parsed = cleanString.toLong()
-                        val formatted = amountFormatter.format(parsed)
-                        
-                        binding.etAmount.removeTextChangedListener(this)
-                        binding.etAmount.setText(formatted)
-                        binding.etAmount.setSelection(formatted.length)
-                        binding.etAmount.addTextChangedListener(this)
-                    } catch (e: NumberFormatException) {
-                        // Nếu số quá lớn, giữ nguyên
-                    }
-                }
-                
-                isFormattingAmount = false
-            }
-        })
-    }
-
-    // Làm cho nền trong suốt để thấy được bo góc
+    // Áp dụng Style bo góc cho BottomSheet
     override fun getTheme(): Int {
         return R.style.CustomBottomSheetDialog
     }

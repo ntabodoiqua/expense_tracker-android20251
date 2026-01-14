@@ -6,17 +6,15 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_modal"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingHorizontal="24dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="24dp">
+    android:orientation="vertical">
 
     <!-- Drag Handle -->
     <View
         android:id="@+id/dragHandle"
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:background="@drawable/bg_drag_handle" />
+        android:layout_width="50dp"
+        android:layout_height="5dp"
+        android:layout_marginVertical="10dp"
+        android:background="#9ca3af" />
 
     <!-- Title -->
     <TextView
@@ -24,255 +22,193 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="20dp"
         android:text="Thêm giao dịch mới"
-        android:textColor="#1F2937"
-        android:textSize="22sp"
+        android:textColor="#FF6B00"
+        android:textSize="32sp"
         android:textStyle="bold" />
-
-    <!-- Amount Input Section -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:cardBackgroundColor="#F8FAFC"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layoutAmount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:boxStrokeColor="#00000000"
-                app:boxStrokeWidth="0dp"
-                app:hintEnabled="false">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etAmount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:gravity="center"
-                    android:hint="0"
-                    android:inputType="numberDecimal"
-                    android:textColor="#3B82F6"
-                    android:textColorHint="#CBD5E1"
-                    android:textSize="48sp"
-                    android:textStyle="bold" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:id="@+id/tvCurrencyLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Nhập số tiền (VNĐ)"
-                android:textColor="#94A3B8"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Transaction Type Chips -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipExpense"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_weight="1"
-            android:checkable="true"
-            android:checked="true"
-            android:gravity="center"
-            android:text="💸 Chi tiêu"
-            android:textColor="@color/chip_expense_text"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:chipBackgroundColor="@color/chip_expense_bg"
-            app:chipCornerRadius="12dp"
-            app:chipStrokeColor="#FECACA"
-            app:chipStrokeWidth="1.5dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipIncome"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:checkable="true"
-            android:gravity="center"
-            android:text="💰 Thu nhập"
-            android:textColor="@color/chip_income_text"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:chipBackgroundColor="@color/chip_income_bg"
-            app:chipCornerRadius="12dp"
-            app:chipStrokeColor="#BBF7D0"
-            app:chipStrokeWidth="1.5dp" />
-
-    </LinearLayout>
 
     <!-- Form Fields -->
     <LinearLayout
         android:id="@+id/layoutForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Transaction Type Chips -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupType"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipExpense"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Chi tiêu"
+                android:textColor="@color/chip_expense_text"
+                android:textSize="18sp"
+                app:checkedIcon="@drawable/check"
+                app:checkedIconTint="#FFFFFF"
+                app:chipBackgroundColor="@color/chip_expense_bg"
+                app:chipCornerRadius="10dp"
+                app:chipMinHeight="50dp"
+                app:chipStrokeColor="#dc2626"
+                app:closeIcon="@drawable/arrow_down"
+                app:closeIconTint="@color/chip_expense_text"
+                app:closeIconVisible="true" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipIncome"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Thu nhập"
+                android:textColor="@color/chip_income_text"
+                android:textSize="16sp"
+                app:checkedIcon="@drawable/check"
+                app:checkedIconTint="#FFFFFF"
+                app:chipBackgroundColor="@color/chip_income_bg"
+                app:chipCornerRadius="10dp"
+                app:chipMinHeight="50dp"
+                app:chipStrokeColor="#16a34a"
+                app:closeIcon="@drawable/arrow_up"
+                app:closeIconTint="@color/chip_income_text"
+                app:closeIconVisible="true" />
+        </com.google.android.material.chip.ChipGroup>
 
         <!-- Category Dropdown -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layoutCategory"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        <TextView
+            android:id="@+id/tvCategory"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Danh mục"
-            android:textColorHint="#64748B"
-            app:boxBackgroundColor="@android:color/white"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/text_input_stroke_color"
-            app:endIconMode="dropdown_menu"
-            app:endIconTint="#64748B"
-            app:hintTextColor="#475569"
-            app:startIconDrawable="@drawable/layout_grid"
-            app:startIconTint="#64748B">
+            android:layout_height="50dp"
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCompleteCategory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:inputType="none"
-                android:padding="16dp"
-                android:popupBackground="@drawable/bg_dropdown_popup"
-                android:textColor="#1F2937"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_white_with_border"
+            android:clickable="true"
+            android:drawableStart="@drawable/layout_grid"
+
+            android:drawableEnd="@drawable/chevron_down"
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:focusable="true"
+            android:gravity="center_vertical"
+
+            android:hint="Loại giao dịch"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18sp" />
+
+        <!-- Amount Input -->
+        <EditText
+            android:id="@+id/etAmount"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_white_with_border"
+            android:backgroundTint="@null"
+
+            android:drawableStart="@drawable/dollar_sign"
+            android:drawablePadding="10dp"
+
+            android:drawableTint="#0033CC"
+            android:ellipsize="end"
+            android:hint="Số tiền"
+            android:inputType="textCapSentences"
+
+            android:maxLines="1"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18sp" />
 
         <!-- Date Picker -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layoutDate"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <TextView
+            android:id="@+id/tvDate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Ngày giao dịch"
-            android:textColorHint="#64748B"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/text_input_stroke_color"
-            app:endIconDrawable="@drawable/calendar_days"
-            app:endIconMode="custom"
-            app:endIconTint="#64748B"
-            app:hintTextColor="#475569"
-            app:startIconDrawable="@drawable/calendar_days"
-            app:startIconTint="#64748B">
+            android:layout_height="50dp"
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:inputType="none"
-                android:padding="16dp"
-                android:textColor="#1F2937"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_white_with_border"
+            android:clickable="true"
+
+            android:drawableStart="@drawable/calendar_days"
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:focusable="true"
+            android:gravity="center_vertical"
+
+            android:hint="Ngày giao dịch"
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18sp" />
 
         <!-- Note Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layoutNote"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <EditText
+            android:id="@+id/etNote"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Ghi chú (tùy chọn)"
-            android:textColorHint="#64748B"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/text_input_stroke_color"
-            app:counterEnabled="true"
-            app:counterMaxLength="100"
-            app:hintTextColor="#475569"
-            app:startIconDrawable="@drawable/pencil_line"
-            app:startIconTint="#64748B">
+            android:layout_height="50dp"
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etNote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapSentences|textMultiLine"
-                android:maxLength="100"
-                android:maxLines="3"
-                android:minLines="2"
-                android:padding="16dp"
-                android:textColor="#1F2937"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:background="@drawable/bg_white_with_border"
+            android:backgroundTint="@null"
+            android:drawableStart="@drawable/pencil_line"
+
+            android:drawablePadding="10dp"
+            android:drawableTint="#0033CC"
+
+            android:ellipsize="end"
+            android:hint="Ghi chú (tùy chọn)"
+            android:inputType="textCapSentences"
+            android:maxLines="1"
+
+            android:padding="10dp"
+            android:textColor="#1f2937"
+            android:textSize="18sp" />
 
     </LinearLayout>
 
     <!-- Action Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="20dp"
         android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCancel"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCancelTransaction"
             android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="10dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_gray_no_border"
             android:text="Hủy"
             android:textAllCaps="false"
-            android:textColor="#EF4444"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
-            app:rippleColor="#FECACA"
-            app:strokeColor="#FCA5A5"
-            app:strokeWidth="1.5dp" />
+            android:textColor="#0033CC"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnSaveTransaction"
-            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="8dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="20dp"
             android:layout_weight="1"
-            android:backgroundTint="#10B981"
-            android:text="💾 Lưu"
+            android:background="@drawable/bg_gradient_blue"
+            android:text="Lưu"
             android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
-            app:rippleColor="#34D399" />
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

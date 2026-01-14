@@ -1,5 +1,6 @@
 package com.example.expensetracker
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import com.example.expensetracker.data.UserPreferences
 import com.example.expensetracker.databinding.FragmentNotificationBinding
@@ -41,7 +43,7 @@ class NotificationFragment : Fragment() {
         }
 
         // Mark all as read
-        binding.tvMarkAllRead.setOnClickListener {
+        binding.btnMarkAllRead.setOnClickListener {
             markAllAsRead()
         }
 
@@ -64,98 +66,113 @@ class NotificationFragment : Fragment() {
             binding.layoutNotifications.visibility = View.VISIBLE
 
             notifications.forEach { notification ->
-                addNotificationItem(
-                    notification.title,
-                    notification.message,
-                    notification.time,
-                    notification.isUnread,
-                    notification.icon
-                )
+                addNotificationItem(notification)
             }
         }
     }
 
     private fun generateNotifications(): List<NotificationItem> {
         val notifications = mutableListOf<NotificationItem>()
-        val calendar = Calendar.getInstance()
         val formatter = DecimalFormat("#,### đ")
+        // Lấy thời gian đọc lần cuối
+        val lastReadTime = userPreferences.lastNotificationReadTime
 
-        // Check spending limits
+        fun isNew(timestamp: Long): Boolean {
+            return timestamp > lastReadTime
+        }
+
+        // Thời gian đầu ngày hôm nay (00:00:00)
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startOfToday = calendar.timeInMillis
+
+        // 1. KIỂM TRA GIỚI HẠN NGÀY
         if (userPreferences.isDailyLimitEnabled) {
             val dailyLimit = userPreferences.dailyLimit
             val todayExpense = calculateTodayExpense()
-
+            val isUnread = lastReadTime < startOfToday
             if (todayExpense >= dailyLimit) {
+                // MỨC ĐỘ: NGUY HIỂM (Màu Đỏ)
                 notifications.add(
                     NotificationItem(
-                        "Vượt giới hạn chi tiêu hàng ngày",
-                        "Bạn đã chi ${formatter.format(todayExpense)} vượt mức ${formatter.format(dailyLimit)} hôm nay",
+                        "Vượt giới hạn ngày!",
+                        "Bạn đã chi ${formatter.format(todayExpense)} (Vượt mức ${formatter.format(dailyLimit)})",
                         "Hôm nay",
-                        true,
-                        R.drawable.alert_triangle
+                        isUnread,
+                        R.drawable.triangle_alert,
+                        themeColor = "#ef4444",
+                        backgroundColor = "#fee2e2"
                     )
                 )
             } else if (todayExpense >= dailyLimit * 0.8) {
+                // MỨC ĐỘ: CẢNH BÁO (Màu Cam)
                 notifications.add(
                     NotificationItem(
-                        "Sắp đạt giới hạn chi tiêu",
-                        "Bạn đã chi ${(todayExpense / dailyLimit * 100).toInt()}% giới hạn hôm nay",
+                        "Sắp đạt giới hạn ngày",
+                        "Đã chi ${(todayExpense / dailyLimit * 100).toInt()}% giới hạn cho phép.",
                         "Hôm nay",
-                        true,
-                        R.drawable.alert_triangle
+                        isUnread,
+                        R.drawable.siren,
+                        themeColor = "#f97316",
+                        backgroundColor = "#ffedd5"
                     )
                 )
             }
         }
 
+        // 2. KIỂM TRA GIỚI HẠN THÁNG
         if (userPreferences.isMonthlyLimitEnabled) {
             val monthlyLimit = userPreferences.monthlyLimit
             val monthExpense = calculateMonthExpense()
-
+            val isUnread = lastReadTime < startOfToday
             if (monthExpense >= monthlyLimit) {
+                // MỨC ĐỘ: NGUY HIỂM (Màu Đỏ)
                 notifications.add(
                     NotificationItem(
-                        "Vượt giới hạn chi tiêu tháng này",
-                        "Bạn đã chi ${formatter.format(monthExpense)} vượt mức ${formatter.format(monthlyLimit)} trong tháng",
+                        "Vượt giới hạn tháng!",
+                        "Bạn đã chi ${formatter.format(monthExpense)} (Vượt mức ${formatter.format(monthlyLimit)})",
                         "Tháng này",
-                        true,
-                        R.drawable.alert_triangle
+                        isUnread,
+                        R.drawable.triangle_alert,
+                        themeColor = "#ef4444",
+                        backgroundColor = "#fee2e2"
                     )
                 )
             } else if (monthExpense >= monthlyLimit * 0.8) {
+                // MỨC ĐỘ: CẢNH BÁO (Màu Cam)
                 notifications.add(
                     NotificationItem(
-                        "Cảnh báo chi tiêu tháng",
-                        "Bạn đã chi ${(monthExpense / monthlyLimit * 100).toInt()}% giới hạn tháng này",
+                        "Sắp đạt giới hạn tháng",
+                        "Đã chi ${(monthExpense / monthlyLimit * 100).toInt()}% giới hạn cho phép.",
                         "Tháng này",
-                        true,
-                        R.drawable.alert_triangle
+                        isUnread,
+                        R.drawable.siren,
+                        themeColor = "#f97316",
+                        backgroundColor = "#ffedd5"
                     )
                 )
             }
         }
 
-        // Transaction statistics
-        val today = calendar.get(Calendar.DAY_OF_YEAR)
-        val currentYear = calendar.get(Calendar.YEAR)
-
-        val todayTransactions = fullList.filter { transaction ->
-            val transactionCalendar = Calendar.getInstance()
-            transactionCalendar.timeInMillis = transaction.date
-            val transactionDay = transactionCalendar.get(Calendar.DAY_OF_YEAR)
-            val transactionYear = transactionCalendar.get(Calendar.YEAR)
-
-            transactionDay == today && transactionYear == currentYear
-        }
-
+        // 3. THỐNG KÊ (Màu Xanh dương)
+        val todayTransactions = getTodayTransactions()
         if (todayTransactions.isNotEmpty()) {
+            // Lấy thời gian giao dịch mới nhất
+            val latestTxTime = todayTransactions.maxOf { it.date }
+            // Nếu giao dịch mới nhất diễn ra SAU lần cuối bấm đọc -> Chưa đọc
+            val isTxUnread = latestTxTime > lastReadTime
+            val totalSpent = todayTransactions.filter { it.type == 0 }.sumOf { it.amount }
             notifications.add(
                 NotificationItem(
                     "Thống kê hôm nay",
-                    "${todayTransactions.size} giao dịch - Tổng: ${formatter.format(todayTransactions.filter { it.type == 0 }.sumOf { it.amount })}",
+                    "Có ${todayTransactions.size} giao dịch mới. Tổng chi: ${formatter.format(totalSpent)}",
                     "Hôm nay",
-                    false,
-                    R.drawable.ic_bar_chart
+                    isTxUnread,
+                    R.drawable.chart_pie,
+                    themeColor = "#3b82f6",
+                    backgroundColor = "#dbeafe"
                 )
             )
         }
@@ -163,38 +180,56 @@ class NotificationFragment : Fragment() {
         return notifications
     }
 
-    private fun addNotificationItem(
-        title: String,
-        message: String,
-        time: String,
-        isUnread: Boolean,
-        iconRes: Int
-    ) {
+    private fun addNotificationItem(item: NotificationItem) {
         val itemView = layoutInflater.inflate(R.layout.item_notification, binding.layoutNotifications, false)
 
-        itemView.findViewById<ImageView>(R.id.imgNotificationIcon).setImageResource(iconRes)
-        itemView.findViewById<TextView>(R.id.tvNotificationTitle).text = title
-        itemView.findViewById<TextView>(R.id.tvNotificationMessage).text = message
-        itemView.findViewById<TextView>(R.id.tvNotificationTime).text = time
-        itemView.findViewById<View>(R.id.viewUnreadIndicator).visibility = if (isUnread) View.VISIBLE else View.GONE
+        val imgIcon = itemView.findViewById<ImageView>(R.id.imgNotificationIcon)
+        val cardIcon = itemView.findViewById<CardView>(R.id.cardIcon)
+        val tvTitle = itemView.findViewById<TextView>(R.id.tvNotificationTitle)
+        val tvMessage = itemView.findViewById<TextView>(R.id.tvNotificationMessage)
+        val tvTime = itemView.findViewById<TextView>(R.id.tvNotificationTime)
+        val viewUnread = itemView.findViewById<View>(R.id.viewUnreadIndicator)
+
+        // Set Data
+        tvTitle.text = item.title
+        tvMessage.text = item.message
+        tvTime.text = item.time
+        imgIcon.setImageResource(item.icon)
+
+        try {
+            // 1. Đổi màu icon (Tint)
+            imgIcon.setColorFilter(Color.parseColor(item.themeColor))
+
+            // 2. Đổi màu nền CardView
+            cardIcon.setCardBackgroundColor(Color.parseColor(item.backgroundColor))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Ẩn hiện chấm đỏ chưa đọc
+        viewUnread.visibility = if (item.isUnread) View.VISIBLE else View.GONE
 
         binding.layoutNotifications.addView(itemView)
+    }
+
+    private fun getTodayTransactions(): List<com.example.expensetracker.data.Transaction> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val currentYear = calendar.get(Calendar.YEAR)
+
+        return fullList.filter { transaction ->
+            val tCal = Calendar.getInstance()
+            tCal.timeInMillis = transaction.date
+            tCal.get(Calendar.DAY_OF_YEAR) == today && tCal.get(Calendar.YEAR) == currentYear
+        }
     }
 
     private fun calculateTodayExpense(): Double {
         val calendar = Calendar.getInstance()
         val today = calendar.get(Calendar.DAY_OF_YEAR)
         val currentYear = calendar.get(Calendar.YEAR)
-
-        return fullList.filter { transaction ->
-            if (transaction.type != 0) return@filter false
-
-            val transactionCalendar = Calendar.getInstance()
-            transactionCalendar.timeInMillis = transaction.date
-            val transactionDay = transactionCalendar.get(Calendar.DAY_OF_YEAR)
-            val transactionYear = transactionCalendar.get(Calendar.YEAR)
-
-            transactionDay == today && transactionYear == currentYear
+        return fullList.filter {
+            it.type == 0 && isSameDay(it.date, today, currentYear)
         }.sumOf { it.amount }
     }
 
@@ -202,17 +237,23 @@ class NotificationFragment : Fragment() {
         val calendar = Calendar.getInstance()
         val currentMonth = calendar.get(Calendar.MONTH)
         val currentYear = calendar.get(Calendar.YEAR)
-
-        return fullList.filter { transaction ->
-            if (transaction.type != 0) return@filter false
-
-            val transactionCalendar = Calendar.getInstance()
-            transactionCalendar.timeInMillis = transaction.date
-            val transactionMonth = transactionCalendar.get(Calendar.MONTH)
-            val transactionYear = transactionCalendar.get(Calendar.YEAR)
-
-            transactionMonth == currentMonth && transactionYear == currentYear
+        return fullList.filter {
+            it.type == 0 && isSameMonth(it.date, currentMonth, currentYear)
         }.sumOf { it.amount }
+    }
+
+    // Helper function check ngày
+    private fun isSameDay(date: Long, day: Int, year: Int): Boolean {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = date
+        return cal.get(Calendar.DAY_OF_YEAR) == day && cal.get(Calendar.YEAR) == year
+    }
+
+    // Helper function check tháng
+    private fun isSameMonth(date: Long, month: Int, year: Int): Boolean {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = date
+        return cal.get(Calendar.MONTH) == month && cal.get(Calendar.YEAR) == year
     }
 
     private fun markAllAsRead() {
@@ -222,16 +263,18 @@ class NotificationFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Mark as read when leaving
         markAllAsRead()
         _binding = null
     }
 
+    // Data Class cập nhật thêm màu sắc
     data class NotificationItem(
         val title: String,
         val message: String,
         val time: String,
         val isUnread: Boolean,
-        val icon: Int
+        val icon: Int,
+        val themeColor: String,
+        val backgroundColor: String
     )
 }

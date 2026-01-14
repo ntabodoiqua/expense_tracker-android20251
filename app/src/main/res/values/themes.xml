@@ -1,22 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.ExpenseTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
+        <item name="colorPrimary">#0033CC</item> </style>
 
     <style name="Theme.ExpenseTracker" parent="Base.Theme.ExpenseTracker" />
 
-    <!-- Custom BottomSheet Dialog -->
-    <style name="CustomBottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
+    <style name="CustomBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
     </style>
 
-    <style name="CustomBottomSheet" parent="Widget.Design.BottomSheet.Modal">
+    <style name="CustomBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
     </style>
 
-    <!-- Custom DatePicker Dialog -->
     <style name="CustomDatePickerDialog" parent="Theme.MaterialComponents.Light.Dialog">
         <item name="colorPrimary">#3B82F6</item>
         <item name="colorOnPrimary">@android:color/white</item>
@@ -25,7 +23,6 @@
         <item name="android:windowBackground">@android:color/white</item>
     </style>
 
-    <!-- Custom Material DatePicker -->
     <style name="CustomMaterialDatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
         <item name="colorPrimary">#3B82F6</item>
         <item name="colorOnPrimary">@android:color/white</item>
