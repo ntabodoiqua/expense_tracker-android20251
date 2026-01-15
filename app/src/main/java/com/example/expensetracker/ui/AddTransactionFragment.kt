@@ -1,145 +1,158 @@
 package com.example.expensetracker.ui
 
-import android.app.Dialog
+import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import com.example.expensetracker.R
 import com.example.expensetracker.data.Transaction
 import com.example.expensetracker.databinding.ActivityAddTransactionBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.Calendar
 import java.util.Locale
 
 class AddTransactionFragment : BottomSheetDialogFragment() {
     private lateinit var binding: ActivityAddTransactionBinding
+    private val decimalFormat = DecimalFormat("#,###", DecimalFormatSymbols(Locale.US).apply {
+        groupingSeparator = '.'
+    })
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    private var selectedDate: Long = System.currentTimeMillis()
+    private var selectedDateCalendar = Calendar.getInstance()
     private var isIncomeState = false
     var onSaveClick: ((Double, String, String, String, Long) -> Unit)? = null
-    private val expenseCategories = listOf("Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Tiền nhà", "Hóa đơn", "Y tế", "Giáo dục", "Khác")
-    private val incomeCategories = listOf("Lương", "Thưởng", "Lãi tiết kiệm", "Bán hàng", "Quà tặng", "Khác")
 
-    // Khởi tạo giao diện từ XML binding
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    // Khởi tạo view binding cho fragment
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = ActivityAddTransactionBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    // Cấu hình BottomSheet mở toàn màn hình
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
-        dialog.setOnShowListener {
-            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
-            bottomSheet?.let { sheet ->
-                val behavior = BottomSheetBehavior.from(sheet)
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.skipCollapsed = true
-            }
-        }
-        return dialog
-    }
-
-    // Thiết lập logic và sự kiện cho các thành phần UI
+    // Thiết lập giao diện và xử lý sự kiện sau khi view được tạo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val transactionArg = arguments?.getSerializable("transaction_data") as? Transaction
-        if (transactionArg != null) {
-            binding.tvTitle.text = "Sửa giao dịch"
-            binding.btnSaveTransaction.text = "Cập nhật"
-            binding.etAmount.setText(transactionArg.amount.toLong().toString())
-            binding.etNote.setText(transactionArg.note)
-            selectedDate = transactionArg.date
-            val isIncome = (transactionArg.type == 1)
-            setTransactionType(isIncome)
-            binding.tvCategory.text = transactionArg.category
-        } else {
-            binding.tvTitle.text = "Thêm giao dịch"
-            binding.btnSaveTransaction.text = "Lưu"
-            setTransactionType(false)
-            selectedDate = System.currentTimeMillis()
+        val expenseCategories = listOf("Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Tiền nhà", "Hóa đơn", "Y tế", "Giáo dục", "Khác")
+        val incomeCategories = listOf("Lương", "Thưởng", "Lãi tiết kiệm", "Bán hàng", "Quà tặng", "Khác")
+        binding.etAmount.inputType = InputType.TYPE_CLASS_NUMBER
+
+        // Chuyển đổi loại giao dịch giữa Thu nhập và Chi tiêu
+        fun setTransactionType(isIncome: Boolean) {
+            isIncomeState = isIncome
+            binding.chipIncome.isChecked = isIncome
+            binding.chipExpense.isChecked = !isIncome
+            val currentList = if (isIncome) incomeCategories else expenseCategories
+            binding.tvCategory.text = currentList[0]
         }
-        updateDateDisplay()
+
+        // Hiển thị popup menu chọn danh mục
+        fun showCategoryMenu(view: View) {
+            val popup = PopupMenu(requireContext(), view)
+            val list = if (isIncomeState) incomeCategories else expenseCategories
+            for (item in list) {
+                popup.menu.add(item)
+            }
+            popup.setOnMenuItemClickListener { item ->
+                binding.tvCategory.text = item.title
+                true
+            }
+            popup.show()
+        }
+
         binding.chipExpense.setOnClickListener { setTransactionType(false) }
         binding.chipIncome.setOnClickListener { setTransactionType(true) }
         binding.tvCategory.setOnClickListener { showCategoryMenu(it) }
         binding.tvDate.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Chọn ngày giao dịch")
-                .setSelection(selectedDate)
-                .setTheme(R.style.CustomMaterialDatePicker)
-                .build()
-            datePicker.addOnPositiveButtonClickListener { selection ->
-                selectedDate = selection
-                updateDateDisplay()
-            }
-            datePicker.show(parentFragmentManager, "DATE_PICKER")
+            val year = selectedDateCalendar.get(Calendar.YEAR)
+            val month = selectedDateCalendar.get(Calendar.MONTH)
+            val day = selectedDateCalendar.get(Calendar.DAY_OF_MONTH)
+            val datePickerDialog = DatePickerDialog(requireContext(), { _, y, m, d ->
+                selectedDateCalendar.set(y, m, d)
+                binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
+            }, year, month, day)
+            datePickerDialog.show()
         }
         binding.btnCancelTransaction.setOnClickListener { dismiss() }
+
+        // TextWatcher để format số tiền với dấu chấm phân cách hàng nghìn
+        binding.etAmount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                binding.etAmount.removeTextChangedListener(this)
+                try {
+                    var originalString = s.toString()
+                    if (originalString.isEmpty()) {
+                        binding.etAmount.addTextChangedListener(this)
+                        return
+                    }
+                    val cursorPosition = binding.etAmount.selectionStart
+                    val dotsBeforeCursor = originalString.substring(0, cursorPosition).count { it == '.' }
+                    val cleanString = originalString.replace(".", "")
+                    if (cleanString.isNotEmpty()) {
+                        val longval: Long = cleanString.toLong()
+                        val formattedString = decimalFormat.format(longval)
+                        binding.etAmount.setText(formattedString)
+                        val newDotsBeforeCursor = formattedString.substring(0,
+                            minOf(cursorPosition, formattedString.length)).count { it == '.' }
+                        val newCursorPosition = cursorPosition + (newDotsBeforeCursor - dotsBeforeCursor)
+                        binding.etAmount.setSelection(minOf(maxOf(newCursorPosition, 0), formattedString.length))
+                    }
+                } catch (nfe: NumberFormatException) {}
+                binding.etAmount.addTextChangedListener(this)
+            }
+        })
+
+        val transactionArg = arguments?.getSerializable("transaction_data") as? Transaction
+        if (transactionArg != null) {
+            binding.tvTitle.text = "Chỉnh sửa giao dịch"
+            binding.btnSaveTransaction.text = "Cập nhật"
+            binding.etAmount.setText(decimalFormat.format(transactionArg.amount))
+            binding.etNote.setText(transactionArg.note)
+            selectedDateCalendar.timeInMillis = transactionArg.date
+            binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
+            val isIncome = (transactionArg.type == 1)
+            setTransactionType(isIncome)
+            binding.tvCategory.text = transactionArg.category
+        } else {
+            binding.tvTitle.text = "Thêm giao dịch mới"
+            binding.btnSaveTransaction.text = "Lưu"
+            setTransactionType(false)
+            binding.tvDate.text = dateFormatter.format(selectedDateCalendar.time)
+        }
+
+        // Xử lý lưu giao dịch khi nhấn nút Save
         binding.btnSaveTransaction.setOnClickListener {
-            val amountStr = binding.etAmount.text.toString().trim()
-            val note = binding.etNote.text.toString().trim()
-            if (amountStr.isEmpty()) {
+            val rawAmount = binding.etAmount.text.toString()
+                .replace(",", "")
+                .replace(".", "")
+                .replace(" ", "")
+            if (rawAmount.isNotEmpty()) {
+                val amount = rawAmount.toDouble()
+                val note = binding.etNote.text.toString()
+                val category = binding.tvCategory.text.toString()
+                val typeStr = if (isIncomeState) "Thu nhập" else "Chi tiêu"
+                val dateLong = selectedDateCalendar.timeInMillis
+                onSaveClick?.invoke(amount, typeStr, category, note, dateLong)
+                dismiss()
+            } else {
                 binding.etAmount.error = "Vui lòng nhập số tiền"
                 binding.etAmount.requestFocus()
-                return@setOnClickListener
             }
-            val category = binding.tvCategory.text.toString()
-            if (category.isEmpty() || category == "Loại giao dịch") {
-                Toast.makeText(context, "Vui lòng chọn danh mục", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val amount = amountStr.toDoubleOrNull() ?: 0.0
-            if (amount <= 0) {
-                binding.etAmount.error = "Số tiền phải lớn hơn 0"
-                return@setOnClickListener
-            }
-            val typeStr = if (isIncomeState) "Thu nhập" else "Chi tiêu"
-            onSaveClick?.invoke(amount, typeStr, category, note, selectedDate)
-            dismiss()
         }
     }
 
-    // Cập nhật loại giao dịch (Thu/Chi) và danh mục tương ứng
-    private fun setTransactionType(isIncome: Boolean) {
-        isIncomeState = isIncome
-        binding.chipIncome.isChecked = isIncome
-        binding.chipExpense.isChecked = !isIncome
-        val currentCategory = binding.tvCategory.text.toString()
-        val targetList = if (isIncome) incomeCategories else expenseCategories
-        if (!targetList.contains(currentCategory)) {
-            binding.tvCategory.text = targetList[0]
-        }
-    }
-
-    // Hiển thị menu chọn danh mục
-    private fun showCategoryMenu(view: View) {
-        val popup = PopupMenu(requireContext(), view)
-        val list = if (isIncomeState) incomeCategories else expenseCategories
-        for (item in list) {
-            popup.menu.add(item)
-        }
-        popup.setOnMenuItemClickListener { item ->
-            binding.tvCategory.text = item.title
-            true
-        }
-        popup.show()
-    }
-
-    // Cập nhật hiển thị ngày đã chọn
-    private fun updateDateDisplay() {
-        binding.tvDate.text = dateFormatter.format(Date(selectedDate))
-    }
-
-    // Áp dụng theme tùy chỉnh cho BottomSheet
+    // Áp dụng style bo góc cho BottomSheet
     override fun getTheme(): Int {
         return R.style.CustomBottomSheetDialog
     }
