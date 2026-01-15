@@ -15,6 +15,7 @@ import com.example.expensetracker.data.Transaction
 import com.example.expensetracker.databinding.ActivityAddTransactionBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -23,8 +24,10 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: ActivityAddTransactionBinding
 
-    // Format tiền tệ và ngày tháng
-    private val decimalFormat = DecimalFormat("#,###")
+    // Format tiền tệ và ngày tháng - Dùng dấu chấm phân cách hàng nghìn kiểu VN
+    private val decimalFormat = DecimalFormat("#,###", DecimalFormatSymbols(Locale.US).apply {
+        groupingSeparator = '.'
+    })
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var selectedDateCalendar = Calendar.getInstance()
 
@@ -51,8 +54,8 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
         val expenseCategories = listOf("Ăn uống", "Đi lại", "Mua sắm", "Giải trí", "Tiền nhà", "Hóa đơn", "Y tế", "Giáo dục", "Khác")
         val incomeCategories = listOf("Lương", "Thưởng", "Lãi tiết kiệm", "Bán hàng", "Quà tặng", "Khác")
 
-        // Cấu hình bàn phím số cho ô nhập tiền (ghi đè XML để trải nghiệm tốt hơn)
-        binding.etAmount.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        // Cấu hình bàn phím số cho ô nhập tiền - chỉ cho phép số nguyên
+        binding.etAmount.inputType = InputType.TYPE_CLASS_NUMBER
 
         // --- HÀM LOGIC: Đổi loại giao dịch (Chi tiêu <-> Thu nhập) ---
         fun setTransactionType(isIncome: Boolean) {
@@ -111,7 +114,7 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
         // Click Hủy -> Đóng
         binding.btnCancelTransaction.setOnClickListener { dismiss() }
 
-        // 3. XỬ LÝ FORMAT SỐ TIỀN (Thêm dấu phẩy khi nhập)
+        // 3. XỬ LÝ FORMAT SỐ TIỀN (Thêm dấu chấm phân cách hàng nghìn khi nhập)
         binding.etAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -121,8 +124,8 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
                 try {
                     var originalString = s.toString()
                     
-                    // Nếu chuỗi rỗng hoặc chỉ có dấu chấm, không làm gì
-                    if (originalString.isEmpty() || originalString == ".") {
+                    // Nếu chuỗi rỗng, không làm gì
+                    if (originalString.isEmpty()) {
                         binding.etAmount.addTextChangedListener(this)
                         return
                     }
@@ -130,39 +133,28 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
                     // Lưu lại vị trí con trỏ hiện tại
                     val cursorPosition = binding.etAmount.selectionStart
                     
-                    // Đếm số dấu phẩy trước vị trí con trỏ (để tính toán lại vị trí sau khi format)
-                    val commasBeforeCursor = originalString.substring(0, cursorPosition).count { it == ',' }
+                    // Đếm số dấu chấm trước vị trí con trỏ (để tính toán lại vị trí sau khi format)
+                    val dotsBeforeCursor = originalString.substring(0, cursorPosition).count { it == '.' }
                     
-                    // Tách phần nguyên và phần thập phân
-                    val parts = originalString.split(".")
-                    var integerPart = parts[0].replace(",", "")
-                    val decimalPart = if (parts.size > 1) parts[1] else ""
+                    // Loại bỏ tất cả dấu chấm để lấy số thuần
+                    val cleanString = originalString.replace(".", "")
                     
-                    // Nếu có phần nguyên, format nó
-                    if (integerPart.isNotEmpty()) {
-                        val longval: Long = integerPart.toLong()
-                        integerPart = decimalFormat.format(longval)
+                    // Nếu có số, format nó
+                    if (cleanString.isNotEmpty()) {
+                        val longval: Long = cleanString.toLong()
+                        val formattedString = decimalFormat.format(longval)
+                        
+                        // Set text mới
+                        binding.etAmount.setText(formattedString)
+                        
+                        // Tính toán lại vị trí con trỏ sau khi format
+                        val newDotsBeforeCursor = formattedString.substring(0, 
+                            minOf(cursorPosition, formattedString.length)).count { it == '.' }
+                        val newCursorPosition = cursorPosition + (newDotsBeforeCursor - dotsBeforeCursor)
+                        
+                        // Đặt con trỏ về đúng vị trí
+                        binding.etAmount.setSelection(minOf(maxOf(newCursorPosition, 0), formattedString.length))
                     }
-                    
-                    // Ghép lại: phần nguyên + dấu chấm (nếu có) + phần thập phân
-                    val formattedString = if (parts.size > 1) {
-                        "$integerPart.$decimalPart"
-                    } else if (originalString.endsWith(".")) {
-                        "$integerPart."
-                    } else {
-                        integerPart
-                    }
-                    
-                    // Set text mới
-                    binding.etAmount.setText(formattedString)
-                    
-                    // Tính toán lại vị trí con trỏ sau khi format
-                    val newCommasBeforeCursor = formattedString.substring(0, 
-                        minOf(cursorPosition, formattedString.length)).count { it == ',' }
-                    val newCursorPosition = cursorPosition + (newCommasBeforeCursor - commasBeforeCursor)
-                    
-                    // Đặt con trỏ về đúng vị trí
-                    binding.etAmount.setSelection(minOf(newCursorPosition, formattedString.length))
                     
                 } catch (nfe: NumberFormatException) {
                     // Nếu lỗi, giữ nguyên text
