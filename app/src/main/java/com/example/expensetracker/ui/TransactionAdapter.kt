@@ -35,6 +35,13 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         holder.binding.tvDate.text = sdf.format(Date(currentItem.date))
 
+        // 2.5. Hiển thị ghi chú (nếu có)
+        if (currentItem.note.isNotEmpty()) {
+            holder.binding.tvNote.text = currentItem.note
+            holder.binding.tvNote.visibility = View.VISIBLE
+        } else {
+            holder.binding.tvNote.visibility = View.GONE
+        }
 
         // 3. Format Tiền tệ
         val formatter = DecimalFormat("#,### ₫")

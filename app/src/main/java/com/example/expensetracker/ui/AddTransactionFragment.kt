@@ -120,16 +120,52 @@ class AddTransactionFragment : BottomSheetDialogFragment() {
 
                 try {
                     var originalString = s.toString()
-                    if (originalString.contains(",")) {
-                        originalString = originalString.replace(",", "")
+                    
+                    // Nếu chuỗi rỗng hoặc chỉ có dấu chấm, không làm gì
+                    if (originalString.isEmpty() || originalString == ".") {
+                        binding.etAmount.addTextChangedListener(this)
+                        return
                     }
-                    val longval: Long = originalString.toLong()
-                    val formattedString = decimalFormat.format(longval)
-
+                    
+                    // Lưu lại vị trí con trỏ hiện tại
+                    val cursorPosition = binding.etAmount.selectionStart
+                    
+                    // Đếm số dấu phẩy trước vị trí con trỏ (để tính toán lại vị trí sau khi format)
+                    val commasBeforeCursor = originalString.substring(0, cursorPosition).count { it == ',' }
+                    
+                    // Tách phần nguyên và phần thập phân
+                    val parts = originalString.split(".")
+                    var integerPart = parts[0].replace(",", "")
+                    val decimalPart = if (parts.size > 1) parts[1] else ""
+                    
+                    // Nếu có phần nguyên, format nó
+                    if (integerPart.isNotEmpty()) {
+                        val longval: Long = integerPart.toLong()
+                        integerPart = decimalFormat.format(longval)
+                    }
+                    
+                    // Ghép lại: phần nguyên + dấu chấm (nếu có) + phần thập phân
+                    val formattedString = if (parts.size > 1) {
+                        "$integerPart.$decimalPart"
+                    } else if (originalString.endsWith(".")) {
+                        "$integerPart."
+                    } else {
+                        integerPart
+                    }
+                    
+                    // Set text mới
                     binding.etAmount.setText(formattedString)
-                    binding.etAmount.setSelection(binding.etAmount.text.length)
+                    
+                    // Tính toán lại vị trí con trỏ sau khi format
+                    val newCommasBeforeCursor = formattedString.substring(0, 
+                        minOf(cursorPosition, formattedString.length)).count { it == ',' }
+                    val newCursorPosition = cursorPosition + (newCommasBeforeCursor - commasBeforeCursor)
+                    
+                    // Đặt con trỏ về đúng vị trí
+                    binding.etAmount.setSelection(minOf(newCursorPosition, formattedString.length))
+                    
                 } catch (nfe: NumberFormatException) {
-                    // Do nothing
+                    // Nếu lỗi, giữ nguyên text
                 }
 
                 binding.etAmount.addTextChangedListener(this)
