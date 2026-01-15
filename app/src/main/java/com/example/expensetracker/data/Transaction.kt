@@ -8,11 +8,10 @@ import java.io.Serializable
 data class Transaction(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-
-    val title: String,      // Ví dụ: Ăn sáng, Tiền nhà
-    val amount: Double,     // Số tiền: 30000.0
-    val type: Int,          // 0: Chi tiêu (Expense), 1: Thu nhập (Income)
-    val category: String,   // Ăn uống, Giải trí...
-    val note: String = "",  // Ghi chú thêm
-    val date: Long = System.currentTimeMillis() // Lưu thời gian dạng mili giây
-) : Serializable // Serializable để sau này truyền object giữa các màn hình
+    val title: String,
+    val amount: Double,
+    val type: Int,
+    val category: String,
+    val note: String = "",
+    val date: Long = System.currentTimeMillis()
+) : Serializable

@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_modal"
     android:gravity="center_horizontal"
     android:orientation="vertical">
-
-    <!-- Drag Handle -->
+    <!-- Thanh kéo BottomSheet -->
     <View
         android:id="@+id/dragHandle"
         android:layout_width="50dp"
         android:layout_height="5dp"
         android:layout_marginVertical="10dp"
         android:background="#9ca3af" />
-
-    <!-- Title -->
+    <!-- Tiêu đề màn hình -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
@@ -27,16 +24,14 @@
         android:textColor="#FF6B00"
         android:textSize="32sp"
         android:textStyle="bold" />
-
-    <!-- Form Fields -->
+    <!-- Form nhập liệu -->
     <LinearLayout
         android:id="@+id/layoutForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp">
-
-        <!-- Transaction Type Chips -->
+        <!-- Chip chọn loại giao dịch (Chi tiêu/Thu nhập) -->
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupType"
             android:layout_width="wrap_content"
@@ -45,7 +40,7 @@
             android:layout_marginBottom="20dp"
             app:selectionRequired="true"
             app:singleSelection="true">
-
+            <!-- Chip Chi tiêu -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipExpense"
                 style="@style/Widget.Material3.Chip.Filter"
@@ -63,7 +58,7 @@
                 app:closeIcon="@drawable/arrow_down"
                 app:closeIconTint="@color/chip_expense_text"
                 app:closeIconVisible="true" />
-
+            <!-- Chip Thu nhập -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipIncome"
                 style="@style/Widget.Material3.Chip.Filter"
@@ -82,106 +77,84 @@
                 app:closeIconTint="@color/chip_income_text"
                 app:closeIconVisible="true" />
         </com.google.android.material.chip.ChipGroup>
-
-        <!-- Category Dropdown -->
+        <!-- Dropdown chọn danh mục -->
         <TextView
             android:id="@+id/tvCategory"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-
             android:layout_marginBottom="20dp"
             android:background="@drawable/bg_white_with_border"
             android:clickable="true"
             android:drawableStart="@drawable/layout_grid"
-
             android:drawableEnd="@drawable/chevron_down"
             android:drawablePadding="10dp"
             android:drawableTint="#0033CC"
-
             android:focusable="true"
             android:gravity="center_vertical"
-
             android:hint="Loại giao dịch"
             android:padding="10dp"
             android:textColor="#1f2937"
             android:textSize="18sp" />
-
-        <!-- Amount Input -->
+        <!-- Ô nhập số tiền -->
         <EditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-
             android:layout_marginBottom="20dp"
             android:background="@drawable/bg_white_with_border"
             android:backgroundTint="@null"
-
             android:drawableStart="@drawable/dollar_sign"
             android:drawablePadding="10dp"
-
             android:drawableTint="#0033CC"
             android:ellipsize="end"
             android:hint="Số tiền"
             android:inputType="number"
-
             android:maxLines="1"
             android:padding="10dp"
             android:textColor="#1f2937"
             android:textSize="18sp" />
-
-        <!-- Date Picker -->
+        <!-- Chọn ngày giao dịch -->
         <TextView
             android:id="@+id/tvDate"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-
             android:layout_marginBottom="20dp"
             android:background="@drawable/bg_white_with_border"
             android:clickable="true"
-
             android:drawableStart="@drawable/calendar_days"
             android:drawablePadding="10dp"
             android:drawableTint="#0033CC"
-
             android:focusable="true"
             android:gravity="center_vertical"
-
             android:hint="Ngày giao dịch"
             android:padding="10dp"
             android:textColor="#1f2937"
             android:textSize="18sp" />
-
-        <!-- Note Input -->
+        <!-- Ô nhập ghi chú -->
         <EditText
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-
             android:background="@drawable/bg_white_with_border"
             android:backgroundTint="@null"
             android:drawableStart="@drawable/pencil_line"
-
             android:drawablePadding="10dp"
             android:drawableTint="#0033CC"
-
             android:ellipsize="end"
             android:hint="Ghi chú (tùy chọn)"
             android:inputType="textCapSentences"
             android:maxLines="1"
-
             android:padding="10dp"
             android:textColor="#1f2937"
             android:textSize="18sp" />
-
     </LinearLayout>
-
-    <!-- Action Buttons -->
+    <!-- Nút hành động (Hủy/Lưu) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginBottom="20dp"
         android:orientation="horizontal">
-
+        <!-- Nút Hủy -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnCancelTransaction"
             android:layout_width="0dp"
@@ -195,7 +168,7 @@
             android:textColor="#0033CC"
             android:textSize="20sp"
             android:textStyle="bold" />
-
+        <!-- Nút Lưu -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnSaveTransaction"
             android:layout_width="0dp"
@@ -209,7 +182,5 @@
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
-
     </LinearLayout>
-
 </LinearLayout>

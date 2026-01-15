@@ -9,37 +9,35 @@ import com.example.expensetracker.data.AppDatabase
 import com.example.expensetracker.data.Transaction
 import kotlinx.coroutines.launch
 
-// Dùng AndroidViewModel để dễ dàng lấy Context khởi tạo Database
 class TransactionViewModel(application: Application) : AndroidViewModel(application) {
-
     private val dao = AppDatabase.getDatabase(application).transactionDao()
-
-    // Chuyển đổi Flow từ Room sang LiveData để Activity dễ quan sát
     val allTransactions: LiveData<List<Transaction>> = dao.getAllTransactions().asLiveData()
 
-    // Hàm thêm giao dịch (chạy trên background thread nhờ coroutines)
+    // Thêm giao dịch mới
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
             dao.insertTransaction(transaction)
         }
     }
-    // Hàm xóa giao dịch
+
+    // Xóa giao dịch
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
             dao.deleteTransaction(transaction)
         }
     }
-    // Hàm sửa giao dịch
+
+    // Cập nhật giao dịch
     fun updateTransaction(transaction: Transaction) {
         viewModelScope.launch {
             dao.updateTransaction(transaction)
         }
     }
-    // Hàm xóa tất cả giao dịch
+
+    // Xóa tất cả giao dịch
     fun deleteAllTransactions() {
         viewModelScope.launch {
             dao.deleteAllTransactions()
         }
     }
-
 }

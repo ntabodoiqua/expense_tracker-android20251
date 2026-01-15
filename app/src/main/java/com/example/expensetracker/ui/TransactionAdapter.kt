@@ -2,7 +2,6 @@ package com.example.expensetracker.ui
 
 import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.expensetracker.R
@@ -14,49 +13,40 @@ import java.util.Date
 import java.util.Locale
 
 class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
-
     private var transactions = emptyList<Transaction>()
     var onItemClick: ((Transaction) -> Unit)? = null
 
     class TransactionViewHolder(val binding: ItemTransactionBinding) : RecyclerView.ViewHolder(binding.root)
 
+    // Tạo ViewHolder mới
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
         val binding = ItemTransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TransactionViewHolder(binding)
     }
 
+    // Gán dữ liệu cho ViewHolder
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
         val currentItem = transactions[position]
-
-        // 1. Gán Text
         holder.binding.tvTitle.text = currentItem.title
-
-        // 2. Format Ngày giờ
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         holder.binding.tvDate.text = sdf.format(Date(currentItem.date))
-
-
-        // 3. Format Tiền tệ
         val formatter = DecimalFormat("#,### ₫")
-
-        if (currentItem.type == 1) { // Thu nhập
-            holder.binding.tvAmount.setTextColor(Color.parseColor("#22c55e")) // Xanh lá
+        if (currentItem.type == 1) {
+            holder.binding.tvAmount.setTextColor(Color.parseColor("#22c55e"))
             holder.binding.tvAmount.text = "+ ${formatter.format(currentItem.amount)}"
-        } else { // Chi tiêu
-            holder.binding.tvAmount.setTextColor(Color.parseColor("#ef4444")) // Đỏ
+        } else {
+            holder.binding.tvAmount.setTextColor(Color.parseColor("#ef4444"))
             holder.binding.tvAmount.text = "- ${formatter.format(currentItem.amount)}"
         }
-
-        // 4. Xử lý Click
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(currentItem)
         }
+        setCategoryIcon(holder, currentItem.category)
+    }
 
-        // ============================================================
-        // 5. XỬ LÝ MÀU SẮC ICON THEO CATEGORY (PHẦN MỚI)
-        // ============================================================
-
-        when (currentItem.category) {
+    // Thiết lập icon và màu sắc theo danh mục
+    private fun setCategoryIcon(holder: TransactionViewHolder, category: String) {
+        when (category) {
             "Ăn uống" -> {
                 holder.binding.imgIcon.setImageResource(R.drawable.utensils)
                 holder.binding.cardIcon.setCardBackgroundColor(Color.parseColor("#ffedd5"))
@@ -130,13 +120,16 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         }
     }
 
+    // Trả về số lượng item
     override fun getItemCount() = transactions.size
 
+    // Cập nhật dữ liệu mới cho adapter
     fun setData(newTransactions: List<Transaction>) {
         this.transactions = newTransactions
         notifyDataSetChanged()
     }
 
+    // Lấy giao dịch tại vị trí cụ thể
     fun getTransactionAt(position: Int): Transaction {
         return transactions[position]
     }
